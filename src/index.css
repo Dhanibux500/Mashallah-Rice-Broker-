@@ -1,0 +1,115 @@
+@import "tailwindcss";
+
+:root {
+  --color-primary: #2d6a4f;
+  --color-primary-hover: #1b4332;
+  --color-secondary: #d4af37;
+  --color-secondary-hover: #b5952f;
+}
+
+.theme-blue {
+  --color-primary: #1e3a8a;
+  --color-primary-hover: #172554;
+  --color-secondary: #94a3b8;
+  --color-secondary-hover: #64748b;
+}
+
+.theme-red {
+  --color-primary: #991b1b;
+  --color-primary-hover: #7f1d1d;
+  --color-secondary: #fca5a5;
+  --color-secondary-hover: #f87171;
+}
+
+.theme-purple {
+  --color-primary: #6b21a8;
+  --color-primary-hover: #581c87;
+  --color-secondary: #f472b6;
+  --color-secondary-hover: #ec4899;
+}
+
+.theme-dark {
+  --color-primary: #111827;
+  --color-primary-hover: #030712;
+  --color-secondary: #f59e0b;
+  --color-secondary-hover: #d97706;
+}
+
+html {
+  scroll-behavior: smooth;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+.font-serif {
+  font-family: 'Playfair Display', Georgia, Cambria, serif;
+}
+
+.font-sans {
+  font-family: 'Inter', 'Poppins', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+/* Primary color utilities */
+.bg-primary {
+  background-color: var(--color-primary);
+}
+
+.bg-primary\/10 {
+  background-color: color-mix(in srgb, var(--color-primary) 10%, transparent);
+}
+
+.bg-primary\/20 {
+  background-color: color-mix(in srgb, var(--color-primary) 20%, transparent);
+}
+
+.text-primary {
+  color: var(--color-primary);
+}
+
+.border-primary {
+  border-color: var(--color-primary);
+}
+
+.hover\:bg-primary-hover:hover {
+  background-color: var(--color-primary-hover);
+}
+
+.hover\:text-primary:hover {
+  color: var(--color-primary);
+}
+
+.focus\:ring-primary:focus {
+  --tw-ring-color: var(--color-primary);
+}
+
+/* Secondary color utilities */
+.bg-secondary {
+  background-color: var(--color-secondary);
+}
+
+.bg-secondary\/10 {
+  background-color: color-mix(in srgb, var(--color-secondary) 10%, transparent);
+}
+
+.bg-secondary\/20 {
+  background-color: color-mix(in srgb, var(--color-secondary) 20%, transparent);
+}
+
+.text-secondary {
+  color: var(--color-secondary);
+}
+
+.border-secondary {
+  border-color: var(--color-secondary);
+}
+
+.hover\:bg-secondary:hover {
+  background-color: var(--color-secondary);
+}
+
+.hover\:bg-secondary-hover:hover {
+  background-color: var(--color-secondary-hover);
+}
+
+.hover\:text-secondary:hover {
+  color: var(--color-secondary);
+}

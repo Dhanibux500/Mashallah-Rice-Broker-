@@ -1,0 +1,6 @@
+{
+  "name": "Mashallah Rice Broker",
+  "description": "Mashallah Broker – Premium Gutka & Basmati Rice Broker Since 2005. Connecting global buyers with the finest rice from Pakistan.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
