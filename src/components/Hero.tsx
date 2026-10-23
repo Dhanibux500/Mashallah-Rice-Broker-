@@ -8,6 +8,7 @@ interface HeroProps {
 }
 
 export const Hero: React.FC<HeroProps> = ({ settings }) => {
+  const [isVideoPlaying, setIsVideoPlaying] = useState(false);
   const [hasVideoError, setHasVideoError] = useState(false);
   const [mobileVideoFailed, setMobileVideoFailed] = useState(false);
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
@@ -20,15 +21,19 @@ export const Hero: React.FC<HeroProps> = ({ settings }) => {
 
   const videoRef = useRef<HTMLVideoElement>(null);
 
-  // Responsive video source selection:
-  // Use vertical 9:16 video on mobile screens; if not available, fall back to desktop 16:9 video
+  // High-performance poster images matching the first frame of the village video
+  const mobilePoster = '/videos/rice-village-mobile-poster.webp';
+  const desktopPoster = '/videos/rice-village-poster.webp';
+  const activePoster = isMobile ? mobilePoster : desktopPoster;
+
+  // Responsive video selection
   const activeVideoSrc =
     isMobile && !mobileVideoFailed
       ? '/videos/rice-village-mobile.mp4'
       : '/videos/rice-village.mp4';
 
   useEffect(() => {
-    // Detect mobile viewport changes to optimize data and prevent loading unnecessary assets
+    // Detect mobile viewport
     const mobileQuery = window.matchMedia('(max-width: 767px)');
     setIsMobile(mobileQuery.matches);
 
@@ -76,26 +81,31 @@ export const Hero: React.FC<HeroProps> = ({ settings }) => {
   }, []);
 
   useEffect(() => {
-    // Reload and autoplay when source switches
+    // Ensure video autoplays safely on mobile & desktop without blocking or flickering
     if (videoRef.current && !prefersReducedMotion && !hasVideoError) {
       videoRef.current.defaultMuted = true;
       videoRef.current.muted = true;
-      videoRef.current.load();
       const playPromise = videoRef.current.play();
       if (playPromise !== undefined) {
-        playPromise.catch(() => {
-          // Autoplay handled
-        });
+        playPromise
+          .then(() => {
+            setIsVideoPlaying(true);
+          })
+          .catch(() => {
+            // Autoplay restricted: seamlessly retain the crisp rice-village poster fallback
+            setIsVideoPlaying(false);
+          });
       }
     }
   }, [activeVideoSrc, prefersReducedMotion, hasVideoError]);
 
   const handleVideoError = () => {
     if (isMobile && !mobileVideoFailed) {
-      // If mobile video is not found or fails to load, gracefully fallback to the desktop video
       setMobileVideoFailed(true);
+      setIsVideoPlaying(false);
     } else {
       setHasVideoError(true);
+      setIsVideoPlaying(false);
     }
   };
 
@@ -105,27 +115,74 @@ export const Hero: React.FC<HeroProps> = ({ settings }) => {
   };
 
   return (
-    <section className="relative h-[80vh] flex items-center justify-center overflow-hidden bg-black">
-      {/* Cinematic Background Video - Crisp, bright, and completely unblurred without heavy overlays */}
+    <section className="relative h-[80vh] flex items-center justify-center overflow-hidden bg-[#1a3829]">
+      {/* 
+        1. Immediate Zero-Delay Poster Image Layer 
+        Guarantees that from the very first paint, users see the rice village landscape.
+        Eliminates the black screen completely, even on slow 3G or initial buffering.
+      */}
+      <picture className="absolute inset-0 w-full h-full pointer-events-none">
+        <source
+          srcSet="/videos/rice-village-mobile-poster.webp"
+          media="(max-width: 767px)"
+          type="image/webp"
+        />
+        <source
+          srcSet="/videos/rice-village-mobile-poster.jpg"
+          media="(max-width: 767px)"
+          type="image/jpeg"
+        />
+        <source
+          srcSet="/videos/rice-village-poster.webp"
+          media="(min-width: 768px)"
+          type="image/webp"
+        />
+        <source
+          srcSet="/videos/rice-village-poster.jpg"
+          media="(min-width: 768px)"
+          type="image/jpeg"
+        />
+        <img
+          src={activePoster}
+          alt="Rural Pakistani rice harvesting village"
+          loading="eager"
+          // @ts-expect-error - standard browser fetchpriority attribute
+          fetchpriority="high"
+          decoding="async"
+          className={`w-full h-full object-cover brightness-[1.03] contrast-[1.05] saturate-[1.05] ${
+            isMobile ? 'object-[center_35%]' : 'object-center'
+          }`}
+        />
+      </picture>
+
+      {/* 
+        2. Smoothly Streaming Cinematic Village Video Layer 
+        Crossfades smoothly over the matching poster image when ready, avoiding blank frames.
+      */}
       {!prefersReducedMotion && !hasVideoError && (
         <video
           ref={videoRef}
-          key={activeVideoSrc}
           autoPlay
           loop
           muted
           playsInline
           preload="auto"
+          poster={activePoster}
+          onPlaying={() => setIsVideoPlaying(true)}
+          onCanPlayThrough={() => setIsVideoPlaying(true)}
           onError={handleVideoError}
-          className={`absolute inset-0 w-full h-full object-cover pointer-events-none brightness-[1.03] contrast-[1.05] saturate-[1.05] ${
+          className={`absolute inset-0 w-full h-full object-cover pointer-events-none brightness-[1.03] contrast-[1.05] saturate-[1.05] transition-opacity duration-700 ease-out ${
             isMobile ? 'object-[center_35%]' : 'object-center'
-          }`}
+          } ${isVideoPlaying ? 'opacity-100' : 'opacity-0'}`}
         >
           <source src={activeVideoSrc} type="video/mp4" />
         </video>
       )}
 
-      {/* Hero Content with enhanced text drop-shadow to keep white text readable over clear video */}
+      {/* 
+        3. Hero Content 
+        Readable with drop shadows over clear video & poster imagery.
+      */}
       <div className="relative z-20 text-center px-4 max-w-4xl mx-auto">
         <motion.h1
           initial={{ opacity: 0, y: 30 }}

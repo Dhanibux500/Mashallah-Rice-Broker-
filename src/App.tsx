@@ -10,14 +10,13 @@ export default function App() {
     return window.location.pathname || '/';
   });
 
-  const [settings, setSettings] = useState<SiteSettings | null>(null);
-  const [products, setProducts] = useState<Product[]>([]);
-  const [faqs, setFaqs] = useState<FAQ[]>([]);
-  const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
-  const [leads, setLeads] = useState<Lead[]>([]);
-  const [users, setUsers] = useState<User[]>([]);
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [settings, setSettings] = useState<SiteSettings>(() => StorageService.getSettings());
+  const [products, setProducts] = useState<Product[]>(() => StorageService.getProducts());
+  const [faqs, setFaqs] = useState<FAQ[]>(() => StorageService.getFaqs());
+  const [testimonials, setTestimonials] = useState<Testimonial[]>(() => StorageService.getTestimonials());
+  const [leads, setLeads] = useState<Lead[]>(() => StorageService.getLeads());
+  const [users, setUsers] = useState<User[]>(() => StorageService.getUsers());
+  const [currentUser, setCurrentUser] = useState<User | null>(() => StorageService.getCurrentUser());
 
   const loadData = useCallback(() => {
     const s = StorageService.getSettings();
@@ -45,10 +44,6 @@ export default function App() {
 
   useEffect(() => {
     loadData();
-    // Simulate brief initial loading as in the original site (1 second)
-    const timer = setTimeout(() => {
-      setLoading(false);
-    }, 400);
 
     const handleStorageChange = () => {
       loadData();
@@ -63,7 +58,6 @@ export default function App() {
     window.addEventListener('popstate', handlePopState);
 
     return () => {
-      clearTimeout(timer);
       window.removeEventListener('mashallah_storage_change', handleStorageChange);
       window.removeEventListener('mashallah_auth_change', handleStorageChange);
       window.removeEventListener('popstate', handlePopState);
@@ -81,14 +75,6 @@ export default function App() {
     setCurrentUser(null);
     navigate('/');
   };
-
-  if (loading || !settings) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-[#f5f2ed] text-primary">
-        <div className="w-12 h-12 border-4 border-current border-t-transparent rounded-full animate-spin" />
-      </div>
-    );
-  }
 
   // Routing
   if (currentPath === '/auth') {
