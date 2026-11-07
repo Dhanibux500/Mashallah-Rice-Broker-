@@ -146,8 +146,7 @@ export const Hero: React.FC<HeroProps> = ({ settings }) => {
           src={activePoster}
           alt="Rural Pakistani rice harvesting village"
           loading="eager"
-          // @ts-expect-error - standard browser fetchpriority attribute
-          fetchpriority="high"
+          fetchPriority="high"
           decoding="async"
           className={`w-full h-full object-cover brightness-[1.03] contrast-[1.05] saturate-[1.05] ${
             isMobile ? 'object-[center_35%]' : 'object-center'
