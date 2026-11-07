@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   LayoutDashboard,
   Users,
@@ -59,6 +59,12 @@ export const AdminPage: React.FC<AdminPageProps> = ({
 
   // Settings form state
   const [settingsForm, setSettingsForm] = useState<SiteSettings>(settings);
+
+  useEffect(() => {
+    if (settings) {
+      setSettingsForm(settings);
+    }
+  }, [settings]);
 
   // Toast
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);

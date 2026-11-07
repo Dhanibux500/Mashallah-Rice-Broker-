@@ -64,9 +64,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({
               status: 'active',
               createdAt: new Date().toISOString(),
             };
-            const allUsers = StorageService.getUsers();
-            allUsers.push(newUser);
-            localStorage.setItem('mashallah_users', JSON.stringify(allUsers));
+            StorageService.saveUser(newUser);
             StorageService.setCurrentUser(newUser);
             onLoginSuccess(newUser);
             onNavigate(isAdmin ? '/admin' : '/');
@@ -90,9 +88,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({
             createdAt: new Date().toISOString(),
           };
 
-          const allUsers = StorageService.getUsers();
-          allUsers.push(newUser);
-          localStorage.setItem('mashallah_users', JSON.stringify(allUsers));
+          StorageService.saveUser(newUser);
           StorageService.setCurrentUser(newUser);
           onLoginSuccess(newUser);
           onNavigate(isAdmin ? '/admin' : '/');
@@ -120,8 +116,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({
         status: 'active',
         createdAt: new Date().toISOString(),
       };
-      users.push(adminUser);
-      localStorage.setItem('mashallah_users', JSON.stringify(users));
+      StorageService.saveUser(adminUser);
     }
     StorageService.setCurrentUser(adminUser);
     onLoginSuccess(adminUser);

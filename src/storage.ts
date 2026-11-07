@@ -1,4 +1,15 @@
 import { Product, FAQ, Testimonial, SiteSettings, Lead, User } from './types';
+import { db, testFirestoreConnection } from './firebase';
+import {
+  collection,
+  doc,
+  setDoc,
+  deleteDoc,
+  updateDoc,
+  onSnapshot,
+  getDocs,
+  getDoc,
+} from 'firebase/firestore';
 
 const STORAGE_KEYS = {
   SETTINGS: 'mashallah_settings',
@@ -269,19 +280,30 @@ function setStored<T>(key: string, val: T): void {
   }
 }
 
+// Global initialization flag
+let isFirebaseInitialized = false;
+
 export const StorageService = {
+  // Synchronous getters from local cache for instant UI rendering
   getSettings(): SiteSettings {
     return getStored<SiteSettings>(STORAGE_KEYS.SETTINGS, DEFAULT_SETTINGS);
   },
-  saveSettings(settings: SiteSettings): void {
+
+  async saveSettings(settings: SiteSettings): Promise<void> {
     setStored(STORAGE_KEYS.SETTINGS, settings);
+    try {
+      await setDoc(doc(db, 'settings', 'main'), settings);
+    } catch (err) {
+      console.warn('Firestore saveSettings failed:', err);
+    }
   },
 
   getProducts(): Product[] {
     const list = getStored<Product[]>(STORAGE_KEYS.PRODUCTS, DEFAULT_PRODUCTS);
     return list.sort((a, b) => a.order - b.order);
   },
-  saveProduct(product: Product): void {
+
+  async saveProduct(product: Product): Promise<void> {
     const list = this.getProducts();
     const idx = list.findIndex((p) => p.id === product.id);
     if (idx >= 0) {
@@ -290,17 +312,31 @@ export const StorageService = {
       list.push({ ...product, order: list.length + 1 });
     }
     setStored(STORAGE_KEYS.PRODUCTS, list);
+
+    try {
+      await setDoc(doc(db, 'products', product.id), product);
+    } catch (err) {
+      console.warn('Firestore saveProduct failed:', err);
+    }
   },
-  deleteProduct(id: string): void {
+
+  async deleteProduct(id: string): Promise<void> {
     const list = this.getProducts().filter((p) => p.id !== id);
     setStored(STORAGE_KEYS.PRODUCTS, list);
+
+    try {
+      await deleteDoc(doc(db, 'products', id));
+    } catch (err) {
+      console.warn('Firestore deleteProduct failed:', err);
+    }
   },
 
   getFaqs(): FAQ[] {
     const list = getStored<FAQ[]>(STORAGE_KEYS.FAQS, DEFAULT_FAQS);
     return list.sort((a, b) => a.order - b.order);
   },
-  saveFaq(faq: FAQ): void {
+
+  async saveFaq(faq: FAQ): Promise<void> {
     const list = this.getFaqs();
     const idx = list.findIndex((f) => f.id === faq.id);
     if (idx >= 0) {
@@ -309,16 +345,30 @@ export const StorageService = {
       list.push({ ...faq, order: list.length + 1 });
     }
     setStored(STORAGE_KEYS.FAQS, list);
+
+    try {
+      await setDoc(doc(db, 'faqs', faq.id), faq);
+    } catch (err) {
+      console.warn('Firestore saveFaq failed:', err);
+    }
   },
-  deleteFaq(id: string): void {
+
+  async deleteFaq(id: string): Promise<void> {
     const list = this.getFaqs().filter((f) => f.id !== id);
     setStored(STORAGE_KEYS.FAQS, list);
+
+    try {
+      await deleteDoc(doc(db, 'faqs', id));
+    } catch (err) {
+      console.warn('Firestore deleteFaq failed:', err);
+    }
   },
 
   getTestimonials(): Testimonial[] {
     return getStored<Testimonial[]>(STORAGE_KEYS.TESTIMONIALS, DEFAULT_TESTIMONIALS);
   },
-  saveTestimonial(testimonial: Testimonial): void {
+
+  async saveTestimonial(testimonial: Testimonial): Promise<void> {
     const list = this.getTestimonials();
     const idx = list.findIndex((t) => t.id === testimonial.id);
     if (idx >= 0) {
@@ -327,17 +377,31 @@ export const StorageService = {
       list.push(testimonial);
     }
     setStored(STORAGE_KEYS.TESTIMONIALS, list);
+
+    try {
+      await setDoc(doc(db, 'testimonials', testimonial.id), testimonial);
+    } catch (err) {
+      console.warn('Firestore saveTestimonial failed:', err);
+    }
   },
-  deleteTestimonial(id: string): void {
+
+  async deleteTestimonial(id: string): Promise<void> {
     const list = this.getTestimonials().filter((t) => t.id !== id);
     setStored(STORAGE_KEYS.TESTIMONIALS, list);
+
+    try {
+      await deleteDoc(doc(db, 'testimonials', id));
+    } catch (err) {
+      console.warn('Firestore deleteTestimonial failed:', err);
+    }
   },
 
   getLeads(): Lead[] {
     const list = getStored<Lead[]>(STORAGE_KEYS.LEADS, DEFAULT_LEADS);
     return list.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
   },
-  addLead(lead: Omit<Lead, 'id' | 'createdAt' | 'status'>): Lead {
+
+  async addLead(lead: Omit<Lead, 'id' | 'createdAt' | 'status'>): Promise<Lead> {
     const newLead: Lead = {
       ...lead,
       id: 'lead_' + Date.now(),
@@ -347,20 +411,41 @@ export const StorageService = {
     const list = this.getLeads();
     list.unshift(newLead);
     setStored(STORAGE_KEYS.LEADS, list);
+
+    try {
+      await setDoc(doc(db, 'leads', newLead.id), newLead);
+    } catch (err) {
+      console.warn('Firestore addLead failed:', err);
+    }
     return newLead;
   },
-  updateLeadStatus(id: string, status: 'new' | 'contacted' | 'closed'): void {
+
+  async updateLeadStatus(id: string, status: 'new' | 'contacted' | 'closed'): Promise<void> {
     const list = this.getLeads();
     const idx = list.findIndex((l) => l.id === id);
     if (idx >= 0) {
       list[idx].status = status;
       setStored(STORAGE_KEYS.LEADS, list);
     }
+
+    try {
+      await updateDoc(doc(db, 'leads', id), { status });
+    } catch (err) {
+      console.warn('Firestore updateLeadStatus failed:', err);
+    }
   },
-  deleteLead(id: string): void {
+
+  async deleteLead(id: string): Promise<void> {
     const list = this.getLeads().filter((l) => l.id !== id);
     setStored(STORAGE_KEYS.LEADS, list);
+
+    try {
+      await deleteDoc(doc(db, 'leads', id));
+    } catch (err) {
+      console.warn('Firestore deleteLead failed:', err);
+    }
   },
+
   exportLeadsCsv(): void {
     const leads = this.getLeads();
     const headers = ['Name', 'Email', 'Phone', 'Product Interest', 'Status', 'Date', 'Message'];
@@ -388,12 +473,37 @@ export const StorageService = {
     const list = getStored<User[]>(STORAGE_KEYS.USERS, DEFAULT_USERS);
     return list.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
   },
-  toggleUserStatus(uid: string): void {
+
+  async saveUser(user: User): Promise<void> {
+    const list = this.getUsers();
+    const idx = list.findIndex((u) => u.uid === user.uid || u.email.toLowerCase() === user.email.toLowerCase());
+    if (idx >= 0) {
+      list[idx] = user;
+    } else {
+      list.push(user);
+    }
+    setStored(STORAGE_KEYS.USERS, list);
+
+    try {
+      await setDoc(doc(db, 'users', user.uid), user);
+    } catch (err) {
+      console.warn('Firestore saveUser failed:', err);
+    }
+  },
+
+  async toggleUserStatus(uid: string): Promise<void> {
     const list = this.getUsers();
     const user = list.find((u) => u.uid === uid);
     if (user) {
-      user.status = user.status === 'banned' ? 'active' : 'banned';
+      const nextStatus = user.status === 'banned' ? 'active' : 'banned';
+      user.status = nextStatus;
       setStored(STORAGE_KEYS.USERS, list);
+
+      try {
+        await updateDoc(doc(db, 'users', uid), { status: nextStatus });
+      } catch (err) {
+        console.warn('Firestore toggleUserStatus failed:', err);
+      }
     }
   },
 
@@ -406,6 +516,7 @@ export const StorageService = {
       return null;
     }
   },
+
   setCurrentUser(user: User | null): void {
     if (user) {
       localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(user));
@@ -423,5 +534,138 @@ export const StorageService = {
     localStorage.setItem(STORAGE_KEYS.LEADS, JSON.stringify(DEFAULT_LEADS));
     localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(DEFAULT_USERS));
     window.dispatchEvent(new Event('mashallah_storage_change'));
+  },
+
+  /**
+   * Initializes real-time synchronization with online Firestore database.
+   * Listens to collections so that any change in one browser is instantly broadcast
+   * and reflected in all other browsers and devices.
+   */
+  initRealtimeSync(): void {
+    if (isFirebaseInitialized) return;
+    isFirebaseInitialized = true;
+
+    testFirestoreConnection();
+
+    // 1. Sync Settings
+    onSnapshot(
+      doc(db, 'settings', 'main'),
+      (snap) => {
+        if (snap.exists()) {
+          const val = snap.data() as SiteSettings;
+          setStored(STORAGE_KEYS.SETTINGS, val);
+        } else {
+          // First time initialization: seed default settings to cloud
+          const current = StorageService.getSettings();
+          setDoc(doc(db, 'settings', 'main'), current).catch(console.error);
+        }
+      },
+      (error) => console.warn('Settings sync error:', error)
+    );
+
+    // 2. Sync Products
+    onSnapshot(
+      collection(db, 'products'),
+      (snap) => {
+        if (!snap.empty) {
+          const list: Product[] = [];
+          snap.forEach((d) => {
+            list.push(d.data() as Product);
+          });
+          list.sort((a, b) => a.order - b.order);
+          setStored(STORAGE_KEYS.PRODUCTS, list);
+        } else {
+          // First time initialization: seed default products to cloud
+          const current = StorageService.getProducts();
+          current.forEach((prod) => {
+            setDoc(doc(db, 'products', prod.id), prod).catch(console.error);
+          });
+        }
+      },
+      (error) => console.warn('Products sync error:', error)
+    );
+
+    // 3. Sync FAQs
+    onSnapshot(
+      collection(db, 'faqs'),
+      (snap) => {
+        if (!snap.empty) {
+          const list: FAQ[] = [];
+          snap.forEach((d) => {
+            list.push(d.data() as FAQ);
+          });
+          list.sort((a, b) => a.order - b.order);
+          setStored(STORAGE_KEYS.FAQS, list);
+        } else {
+          const current = StorageService.getFaqs();
+          current.forEach((faq) => {
+            setDoc(doc(db, 'faqs', faq.id), faq).catch(console.error);
+          });
+        }
+      },
+      (error) => console.warn('FAQs sync error:', error)
+    );
+
+    // 4. Sync Testimonials
+    onSnapshot(
+      collection(db, 'testimonials'),
+      (snap) => {
+        if (!snap.empty) {
+          const list: Testimonial[] = [];
+          snap.forEach((d) => {
+            list.push(d.data() as Testimonial);
+          });
+          setStored(STORAGE_KEYS.TESTIMONIALS, list);
+        } else {
+          const current = StorageService.getTestimonials();
+          current.forEach((test) => {
+            setDoc(doc(db, 'testimonials', test.id), test).catch(console.error);
+          });
+        }
+      },
+      (error) => console.warn('Testimonials sync error:', error)
+    );
+
+    // 5. Sync Leads
+    onSnapshot(
+      collection(db, 'leads'),
+      (snap) => {
+        if (!snap.empty) {
+          const list: Lead[] = [];
+          snap.forEach((d) => {
+            list.push(d.data() as Lead);
+          });
+          list.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+          setStored(STORAGE_KEYS.LEADS, list);
+        } else {
+          const current = StorageService.getLeads();
+          current.forEach((lead) => {
+            setDoc(doc(db, 'leads', lead.id), lead).catch(console.error);
+          });
+        }
+      },
+      (error) => console.warn('Leads sync error:', error)
+    );
+
+    // 6. Sync Users
+    onSnapshot(
+      collection(db, 'users'),
+      (snap) => {
+        if (!snap.empty) {
+          const list: User[] = [];
+          snap.forEach((d) => {
+            list.push(d.data() as User);
+          });
+          list.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+          setStored(STORAGE_KEYS.USERS, list);
+        } else {
+          const current = StorageService.getUsers();
+          current.forEach((u) => {
+            setDoc(doc(db, 'users', u.uid), u).catch(console.error);
+          });
+        }
+      },
+      (error) => console.warn('Users sync error:', error)
+    );
   },
 };

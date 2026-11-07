@@ -1,0 +1,122 @@
+{
+  "entities": {
+    "Product": {
+      "title": "Product",
+      "description": "A rice product offered by Mashallah Broker.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "origin": { "type": "string" },
+        "price": { "type": "string" },
+        "imageUrl": { "type": "string" },
+        "description": { "type": "string" },
+        "order": { "type": "number" }
+      },
+      "required": ["id", "name", "price"]
+    },
+    "SiteSettings": {
+      "title": "SiteSettings",
+      "description": "Global website content, contact info, and visibility settings.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "heroHeading": { "type": "string" },
+        "heroSubheading": { "type": "string" },
+        "heroBannerUrl": { "type": "string" },
+        "ownerBio": { "type": "string" },
+        "ownerPhotoUrl": { "type": "string" },
+        "aboutText": { "type": "string" },
+        "contactAddress": { "type": "string" },
+        "contactPhone": { "type": "string" },
+        "contactEmail": { "type": "string" },
+        "locationMapUrl": { "type": "string" },
+        "theme": { "type": "string" },
+        "logoUrl": { "type": "string" }
+      },
+      "required": ["heroHeading", "contactPhone", "contactEmail"]
+    },
+    "FAQ": {
+      "title": "FAQ",
+      "description": "Frequently asked question and answer.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "question": { "type": "string" },
+        "answer": { "type": "string" },
+        "order": { "type": "number" }
+      },
+      "required": ["id", "question", "answer"]
+    },
+    "Testimonial": {
+      "title": "Testimonial",
+      "description": "Client testimonial or review.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "rating": { "type": "number" },
+        "text": { "type": "string" },
+        "imageUrl": { "type": "string" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["id", "name", "text", "rating"]
+    },
+    "Lead": {
+      "title": "Lead",
+      "description": "Quote inquiry submitted by a prospective buyer.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "fullName": { "type": "string" },
+        "email": { "type": "string" },
+        "phone": { "type": "string" },
+        "productInterest": { "type": "string" },
+        "message": { "type": "string" },
+        "status": { "type": "string", "enum": ["new", "contacted", "closed"] },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["id", "fullName", "email", "phone", "message"]
+    },
+    "User": {
+      "title": "User",
+      "description": "Registered buyer or administrator profile.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "fullName": { "type": "string" },
+        "email": { "type": "string" },
+        "role": { "type": "string", "enum": ["admin", "user"] },
+        "status": { "type": "string", "enum": ["active", "banned"] },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["uid", "email", "role"]
+    }
+  },
+  "firestore": {
+    "/products/{productId}": {
+      "schema": "Product",
+      "description": "Collection of available rice products."
+    },
+    "/settings/{settingsId}": {
+      "schema": "SiteSettings",
+      "description": "Site content settings, branding, and contact details."
+    },
+    "/faqs/{faqId}": {
+      "schema": "FAQ",
+      "description": "Frequently asked questions for buyers."
+    },
+    "/testimonials/{testimonialId}": {
+      "schema": "Testimonial",
+      "description": "Client reviews."
+    },
+    "/leads/{leadId}": {
+      "schema": "Lead",
+      "description": "Buyer inquiries submitted through the contact form."
+    },
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "User accounts and administrative roles."
+    }
+  }
+}

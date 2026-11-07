@@ -43,6 +43,7 @@ export default function App() {
   }, []);
 
   useEffect(() => {
+    StorageService.initRealtimeSync();
     loadData();
 
     const handleStorageChange = () => {
