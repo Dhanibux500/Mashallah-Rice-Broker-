@@ -6,7 +6,6 @@ import { Hero } from '../components/Hero';
 import { FounderSection } from '../components/FounderSection';
 import { ProductsSection } from '../components/ProductsSection';
 import { AboutSection } from '../components/AboutSection';
-import { TestimonialsSection } from '../components/TestimonialsSection';
 import { FaqSection } from '../components/FaqSection';
 import { ContactSection } from '../components/ContactSection';
 import { Footer } from '../components/Footer';
@@ -118,10 +117,7 @@ export const HomePage: React.FC<HomePageProps> = ({
         />
       )}
 
-      {/* Client Testimonials Section */}
-      {visibility.testimonials !== false && (
-        <TestimonialsSection testimonials={testimonials} />
-      )}
+
 
       {/* FAQ Accordion Section */}
       {visibility.faq !== false && <FaqSection faqs={faqs} />}
