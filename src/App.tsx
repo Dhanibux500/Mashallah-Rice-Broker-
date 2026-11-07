@@ -4,6 +4,8 @@ import { AdminPage } from './pages/AdminPage';
 import { AuthPage } from './pages/AuthPage';
 import { SiteSettings, Product, FAQ, Testimonial, Lead, User } from './types';
 import { StorageService } from './storage';
+import { auth } from './firebase';
+import { signOut } from 'firebase/auth';
 
 export default function App() {
   const [currentPath, setCurrentPath] = useState<string>(() => {
@@ -72,6 +74,7 @@ export default function App() {
   };
 
   const handleLogout = () => {
+    signOut(auth).catch(console.error);
     StorageService.setCurrentUser(null);
     setCurrentUser(null);
     navigate('/');

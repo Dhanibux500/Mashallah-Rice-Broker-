@@ -626,7 +626,7 @@ export const StorageService = {
       (error) => console.warn('Testimonials sync error:', error)
     );
 
-    // 5. Sync Leads
+    // 5. Sync Leads (Secured: Only authenticated Admin can read)
     onSnapshot(
       collection(db, 'leads'),
       (snap) => {
@@ -637,17 +637,17 @@ export const StorageService = {
           });
           list.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
           setStored(STORAGE_KEYS.LEADS, list);
-        } else {
-          const current = StorageService.getLeads();
-          current.forEach((lead) => {
-            setDoc(doc(db, 'leads', lead.id), lead).catch(console.error);
-          });
         }
       },
-      (error) => console.warn('Leads sync error:', error)
+      (error) => {
+        // Expected for unauthenticated visitors: leads are confidential to admin
+        if (error.code !== 'permission-denied') {
+          console.warn('Leads sync:', error.message);
+        }
+      }
     );
 
-    // 6. Sync Users
+    // 6. Sync Users (Secured: Restricted by rules)
     onSnapshot(
       collection(db, 'users'),
       (snap) => {
@@ -658,14 +658,13 @@ export const StorageService = {
           });
           list.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
           setStored(STORAGE_KEYS.USERS, list);
-        } else {
-          const current = StorageService.getUsers();
-          current.forEach((u) => {
-            setDoc(doc(db, 'users', u.uid), u).catch(console.error);
-          });
         }
       },
-      (error) => console.warn('Users sync error:', error)
+      (error) => {
+        if (error.code !== 'permission-denied') {
+          console.warn('Users sync:', error.message);
+        }
+      }
     );
   },
 };

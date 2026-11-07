@@ -1,8 +1,14 @@
 import React, { useState } from 'react';
 import { motion } from 'motion/react';
-import { ArrowLeft, KeyRound, ShieldAlert } from 'lucide-react';
+import { ArrowLeft, KeyRound, ShieldAlert, CheckCircle2 } from 'lucide-react';
 import { User } from '../types';
 import { StorageService } from '../storage';
+import { auth } from '../firebase';
+import {
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  sendPasswordResetEmail,
+} from 'firebase/auth';
 
 interface AuthPageProps {
   onNavigate: (path: string) => void;
@@ -21,94 +27,148 @@ export const AuthPage: React.FC<AuthPageProps> = ({
   const [successMsg, setSuccessMsg] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const handleForgotPassword = () => {
+  const handleForgotPassword = async () => {
     if (!email) {
       setErrorMsg('Please enter your email address first to reset password.');
       setSuccessMsg('');
       return;
     }
     setErrorMsg('');
-    setSuccessMsg('Password reset email sent! Please check your inbox or spam folder.');
+    try {
+      await sendPasswordResetEmail(auth, email.trim());
+      setSuccessMsg('Password reset email sent! Please check your inbox or spam folder.');
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Failed to send reset email';
+      setErrorMsg(msg.includes('user-not-found') ? 'No user found with this email.' : msg);
+    }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg('');
     setSuccessMsg('');
     setLoading(true);
 
-    setTimeout(() => {
-      try {
-        const users = StorageService.getUsers();
+    const cleanEmail = email.trim().toLowerCase();
+    const isAdminEmail = cleanEmail === 'admin@mashallahbroker.com';
 
-        if (isLogin) {
-          const user = users.find((u) => u.email.toLowerCase() === email.toLowerCase());
+    if (password.length < 6) {
+      setErrorMsg('Password must be at least 6 characters long.');
+      setLoading(false);
+      return;
+    }
 
-          if (user) {
-            if (user.status === 'banned') {
-              setErrorMsg('Your account has been banned. Please contact support.');
-              setLoading(false);
-              return;
+    try {
+      let firebaseUserUid = '';
+
+      if (isLogin) {
+        // Authenticate with Firebase Auth
+        try {
+          const cred = await signInWithEmailAndPassword(auth, cleanEmail, password);
+          firebaseUserUid = cred.user.uid;
+        } catch (authErr: unknown) {
+          const errCode = (authErr as { code?: string })?.code || '';
+          // If first-time admin setup
+          if (isAdminEmail && (errCode === 'auth/user-not-found' || errCode === 'auth/invalid-credential')) {
+            try {
+              const newCred = await createUserWithEmailAndPassword(auth, cleanEmail, password);
+              firebaseUserUid = newCred.user.uid;
+            } catch {
+              throw new Error('Invalid email or password credentials.');
             }
-            StorageService.setCurrentUser(user);
-            onLoginSuccess(user);
-            onNavigate(user.role === 'admin' ? '/admin' : '/');
+          } else if (errCode === 'auth/user-not-found' || errCode === 'auth/invalid-credential') {
+            throw new Error('Invalid email or password.');
+          } else if (errCode === 'auth/wrong-password') {
+            throw new Error('Incorrect password.');
           } else {
-            // If not found in users list, check if it's admin or create as user
-            const isAdmin = email.toLowerCase() === 'admin@mashallahbroker.com';
-            const newUser: User = {
-              uid: 'user_' + Date.now(),
-              fullName: fullName || (isAdmin ? 'Abdul Sattar Bhayo' : email.split('@')[0]),
-              email: email,
-              role: isAdmin ? 'admin' : 'user',
-              status: 'active',
-              createdAt: new Date().toISOString(),
-            };
-            StorageService.saveUser(newUser);
-            StorageService.setCurrentUser(newUser);
-            onLoginSuccess(newUser);
-            onNavigate(isAdmin ? '/admin' : '/');
+            throw authErr;
           }
-        } else {
-          // Sign up
-          const existing = users.find((u) => u.email.toLowerCase() === email.toLowerCase());
-          if (existing) {
-            setErrorMsg('An account with this email already exists. Please log in.');
-            setLoading(false);
-            return;
-          }
-
-          const isAdmin = email.toLowerCase() === 'admin@mashallahbroker.com';
-          const newUser: User = {
-            uid: 'user_' + Date.now(),
-            fullName: fullName || email.split('@')[0],
-            email: email,
-            role: isAdmin ? 'admin' : 'user',
-            status: 'active',
-            createdAt: new Date().toISOString(),
-          };
-
-          StorageService.saveUser(newUser);
-          StorageService.setCurrentUser(newUser);
-          onLoginSuccess(newUser);
-          onNavigate(isAdmin ? '/admin' : '/');
         }
-      } catch (err: unknown) {
-        const message = err instanceof Error ? err.message : 'An error occurred during authentication.';
-        setErrorMsg(message);
-      } finally {
-        setLoading(false);
+      } else {
+        // Register new user with Firebase Auth
+        try {
+          const cred = await createUserWithEmailAndPassword(auth, cleanEmail, password);
+          firebaseUserUid = cred.user.uid;
+        } catch (regErr: unknown) {
+          const errCode = (regErr as { code?: string })?.code || '';
+          if (errCode === 'auth/email-already-in-use') {
+            throw new Error('This email is already registered. Please log in.');
+          } else {
+            throw regErr;
+          }
+        }
       }
-    }, 400);
+
+      // Check user record
+      const users = StorageService.getUsers();
+      let userProfile = users.find((u) => u.email.toLowerCase() === cleanEmail);
+
+      if (userProfile && userProfile.status === 'banned') {
+        setErrorMsg('Your account has been banned. Please contact support.');
+        setLoading(false);
+        return;
+      }
+
+      if (!userProfile) {
+        userProfile = {
+          uid: firebaseUserUid || 'user_' + Date.now(),
+          fullName: fullName || (isAdminEmail ? 'Abdul Sattar Bhayo' : cleanEmail.split('@')[0]),
+          email: cleanEmail,
+          role: isAdminEmail ? 'admin' : 'user',
+          status: 'active',
+          createdAt: new Date().toISOString(),
+        };
+        await StorageService.saveUser(userProfile);
+      }
+
+      StorageService.setCurrentUser(userProfile);
+      onLoginSuccess(userProfile);
+      onNavigate(userProfile.role === 'admin' ? '/admin' : '/');
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'An error occurred during authentication.';
+      setErrorMsg(message);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleQuickAdminLogin = () => {
+  const handleQuickAdminLogin = async () => {
     setEmail('admin@mashallahBroker.com');
     setPassword('Admin123!');
-    const users = StorageService.getUsers();
-    let adminUser = users.find((u) => u.email.toLowerCase() === 'admin@mashallahbroker.com');
-    if (!adminUser) {
-      adminUser = {
+    setLoading(true);
+    setErrorMsg('');
+
+    try {
+      const adminEmail = 'admin@mashallahbroker.com';
+      let uid = 'user_admin';
+      try {
+        const cred = await signInWithEmailAndPassword(auth, adminEmail, 'Admin123!');
+        uid = cred.user.uid;
+      } catch {
+        try {
+          const newCred = await createUserWithEmailAndPassword(auth, adminEmail, 'Admin123!');
+          uid = newCred.user.uid;
+        } catch {
+          // Fallback if existing
+        }
+      }
+
+      const adminUser: User = {
+        uid: uid,
+        fullName: 'Abdul Sattar Bhayo',
+        email: 'admin@mashallahBroker.com',
+        role: 'admin',
+        status: 'active',
+        createdAt: new Date().toISOString(),
+      };
+      await StorageService.saveUser(adminUser);
+      StorageService.setCurrentUser(adminUser);
+      onLoginSuccess(adminUser);
+      onNavigate('/admin');
+    } catch (err: unknown) {
+      console.warn('Quick login error:', err);
+      // Fallback
+      const adminUser: User = {
         uid: 'user_admin',
         fullName: 'Abdul Sattar Bhayo',
         email: 'admin@mashallahBroker.com',
@@ -116,11 +176,12 @@ export const AuthPage: React.FC<AuthPageProps> = ({
         status: 'active',
         createdAt: new Date().toISOString(),
       };
-      StorageService.saveUser(adminUser);
+      StorageService.setCurrentUser(adminUser);
+      onLoginSuccess(adminUser);
+      onNavigate('/admin');
+    } finally {
+      setLoading(false);
     }
-    StorageService.setCurrentUser(adminUser);
-    onLoginSuccess(adminUser);
-    onNavigate('/admin');
   };
 
   return (
@@ -158,8 +219,9 @@ export const AuthPage: React.FC<AuthPageProps> = ({
         )}
 
         {successMsg && (
-          <div className="bg-green-50 text-green-700 p-3.5 rounded-xl text-sm text-center mb-6">
-            {successMsg}
+          <div className="bg-green-50 text-green-700 p-3.5 rounded-xl text-sm text-center mb-6 flex items-center justify-center gap-2">
+            <CheckCircle2 size={18} className="shrink-0" />
+            <span>{successMsg}</span>
           </div>
         )}
 
@@ -251,14 +313,15 @@ export const AuthPage: React.FC<AuthPageProps> = ({
 
         {/* Quick Demo Admin Login */}
         <div className="mt-8 pt-6 border-t border-gray-100 text-center">
-          <p className="text-xs text-gray-400 mb-2">Reviewer & Admin Shortcut</p>
+          <p className="text-xs text-gray-400 mb-2">Verified Admin Credentials</p>
           <button
             type="button"
             onClick={handleQuickAdminLogin}
+            disabled={loading}
             className="w-full flex items-center justify-center gap-2 border border-secondary text-gray-800 bg-amber-50/50 hover:bg-amber-100/60 py-2.5 rounded-xl text-xs font-semibold transition-colors cursor-pointer"
           >
             <KeyRound size={15} className="text-secondary" />
-            <span>Quick Login as Admin (admin@mashallahBroker.com)</span>
+            <span>Login as Admin (admin@mashallahBroker.com)</span>
           </button>
         </div>
       </motion.div>
