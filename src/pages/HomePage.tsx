@@ -64,7 +64,7 @@ export const HomePage: React.FC<HomePageProps> = ({
   const visibility = settings.sectionVisibility || {};
 
   return (
-    <div className="min-h-screen font-sans bg-[#f5f2ed] text-gray-800 flex flex-col relative transition-colors duration-300">
+    <div className="min-h-screen font-sans bg-[#fbfbfa] text-slate-800 flex flex-col relative transition-colors duration-300 selection:bg-emerald-100 selection:text-emerald-900">
       {/* Toast Notification */}
       <AnimatePresence>
         {toast && (

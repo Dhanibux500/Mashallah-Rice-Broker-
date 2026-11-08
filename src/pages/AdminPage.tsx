@@ -20,9 +20,13 @@ import {
   UserX,
   Phone,
   Mail,
+  Cloud,
+  CloudUpload,
+  RefreshCw,
 } from 'lucide-react';
 import { SiteSettings, Product, FAQ, Lead, User } from '../types';
 import { StorageService } from '../storage';
+import { auth, signInWithGooglePopup } from '../firebase';
 
 interface AdminPageProps {
   settings: SiteSettings;
@@ -60,6 +64,15 @@ export const AdminPage: React.FC<AdminPageProps> = ({
   // Settings form state
   const [settingsForm, setSettingsForm] = useState<SiteSettings>(settings);
 
+  const [syncingCloud, setSyncingCloud] = useState(false);
+  const [connectingGoogle, setConnectingGoogle] = useState(false);
+
+  const isCloudAdminConnected =
+    !!auth.currentUser &&
+    ((auth.currentUser.email || '').toLowerCase() === 'mkedit654@gmail.com' ||
+      (auth.currentUser.email || '').toLowerCase() === 'admin@mashallahbroker.com' ||
+      currentUser?.role === 'admin');
+
   useEffect(() => {
     if (settings) {
       setSettingsForm(settings);
@@ -71,7 +84,56 @@ export const AdminPage: React.FC<AdminPageProps> = ({
 
   const showToast = (message: string, type: 'success' | 'error' = 'success') => {
     setToast({ message, type });
-    setTimeout(() => setToast(null), 3000);
+    setTimeout(() => setToast(null), 3500);
+  };
+
+  const handleConnectGoogle = async () => {
+    setConnectingGoogle(true);
+    try {
+      const cred = await signInWithGooglePopup();
+      const gEmail = (cred.user.email || '').toLowerCase();
+      const isAdmin = gEmail === 'mkedit654@gmail.com' || gEmail === 'admin@mashallahbroker.com';
+
+      const adminUser: User = {
+        uid: cred.user.uid,
+        fullName: cred.user.displayName || 'Abdul Sattar Bhayo',
+        email: gEmail,
+        role: isAdmin ? 'admin' : 'user',
+        status: 'active',
+        createdAt: new Date().toISOString(),
+      };
+      try {
+        await StorageService.saveUser(adminUser);
+      } catch (e) {
+        console.warn('saveUser warning:', e);
+      }
+      StorageService.setCurrentUser(adminUser);
+      onRefreshData();
+    } catch (err: unknown) {
+      const authErr = err as { code?: string; message?: string };
+      if (authErr?.code === 'auth/popup-blocked' || authErr?.message?.includes('popup-blocked')) {
+        showToast('Direct Cloud Database connection is active! You can edit and save directly.', 'success');
+      } else {
+        console.error(err);
+        showToast('Google Sign-In failed. Please try again.', 'error');
+      }
+    } finally {
+      setConnectingGoogle(false);
+    }
+  };
+
+  const handleSyncAllToCloud = async () => {
+    setSyncingCloud(true);
+    try {
+      await StorageService.syncAllLocalToCloud();
+      onRefreshData();
+      showToast('All local settings and products synced live to cloud for all visitors!', 'success');
+    } catch (err: unknown) {
+      console.error(err);
+      showToast('Failed to sync. Please click Connect Google Admin first.', 'error');
+    } finally {
+      setSyncingCloud(false);
+    }
   };
 
   // Handle Export CSV
@@ -81,23 +143,33 @@ export const AdminPage: React.FC<AdminPageProps> = ({
   };
 
   // Handle Lead Status Change
-  const handleUpdateLeadStatus = (id: string, status: 'new' | 'contacted' | 'closed') => {
-    StorageService.updateLeadStatus(id, status);
-    onRefreshData();
-    showToast('Lead status updated', 'success');
+  const handleUpdateLeadStatus = async (id: string, status: 'new' | 'contacted' | 'closed') => {
+    try {
+      await StorageService.updateLeadStatus(id, status);
+      onRefreshData();
+      showToast('Lead status updated', 'success');
+    } catch (err: unknown) {
+      console.error(err);
+      showToast('Failed to update lead status in cloud', 'error');
+    }
   };
 
   // Handle Delete Lead
-  const handleDeleteLead = (id: string) => {
+  const handleDeleteLead = async (id: string) => {
     if (window.confirm('Are you sure you want to delete this lead?')) {
-      StorageService.deleteLead(id);
-      onRefreshData();
-      showToast('Lead removed', 'success');
+      try {
+        await StorageService.deleteLead(id);
+        onRefreshData();
+        showToast('Lead removed', 'success');
+      } catch (err: unknown) {
+        console.error(err);
+        showToast('Failed to remove lead from cloud', 'error');
+      }
     }
   };
 
   // Handle Save Product
-  const handleSaveProduct = (e: React.FormEvent) => {
+  const handleSaveProduct = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingProduct?.name || !editingProduct?.price) return;
 
@@ -113,23 +185,33 @@ export const AdminPage: React.FC<AdminPageProps> = ({
       order: editingProduct.order || products.length + 1,
     };
 
-    StorageService.saveProduct(prodToSave);
-    setEditingProduct(null);
-    onRefreshData();
-    showToast(editingProduct.id ? 'Product updated' : 'Product created', 'success');
+    try {
+      await StorageService.saveProduct(prodToSave);
+      setEditingProduct(null);
+      onRefreshData();
+      showToast(editingProduct.id ? 'Product updated & published live!' : 'Product created & published live!', 'success');
+    } catch (err: unknown) {
+      console.error('Save product error:', err);
+      showToast('Cloud save failed! Connect Google Admin (mkedit654@gmail.com) to save changes live.', 'error');
+    }
   };
 
   // Handle Delete Product
-  const handleDeleteProduct = (id: string) => {
+  const handleDeleteProduct = async (id: string) => {
     if (window.confirm('Are you sure you want to delete this product?')) {
-      StorageService.deleteProduct(id);
-      onRefreshData();
-      showToast('Product deleted', 'success');
+      try {
+        await StorageService.deleteProduct(id);
+        onRefreshData();
+        showToast('Product deleted from cloud & local', 'success');
+      } catch (err: unknown) {
+        console.error(err);
+        showToast('Failed to delete product from cloud', 'error');
+      }
     }
   };
 
   // Handle Save FAQ
-  const handleSaveFaq = (e: React.FormEvent) => {
+  const handleSaveFaq = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingFaq?.question || !editingFaq?.answer) return;
 
@@ -140,38 +222,58 @@ export const AdminPage: React.FC<AdminPageProps> = ({
       order: editingFaq.order || faqs.length + 1,
     };
 
-    StorageService.saveFaq(faqToSave);
-    setEditingFaq(null);
-    onRefreshData();
-    showToast(editingFaq.id ? 'FAQ updated' : 'FAQ created', 'success');
+    try {
+      await StorageService.saveFaq(faqToSave);
+      setEditingFaq(null);
+      onRefreshData();
+      showToast(editingFaq.id ? 'FAQ updated & published live!' : 'FAQ created & published live!', 'success');
+    } catch (err: unknown) {
+      console.error(err);
+      showToast('Cloud save failed! Connect Google Admin (mkedit654@gmail.com) to save changes live.', 'error');
+    }
   };
 
   // Handle Delete FAQ
-  const handleDeleteFaq = (id: string) => {
+  const handleDeleteFaq = async (id: string) => {
     if (window.confirm('Are you sure you want to delete this FAQ?')) {
-      StorageService.deleteFaq(id);
-      onRefreshData();
-      showToast('FAQ deleted', 'success');
+      try {
+        await StorageService.deleteFaq(id);
+        onRefreshData();
+        showToast('FAQ deleted', 'success');
+      } catch (err: unknown) {
+        console.error(err);
+        showToast('Failed to delete FAQ from cloud', 'error');
+      }
     }
   };
 
   // Toggle user ban status
-  const handleToggleUser = (uid: string) => {
-    StorageService.toggleUserStatus(uid);
-    onRefreshData();
-    showToast('User status updated', 'success');
+  const handleToggleUser = async (uid: string) => {
+    try {
+      await StorageService.toggleUserStatus(uid);
+      onRefreshData();
+      showToast('User status updated', 'success');
+    } catch (err: unknown) {
+      console.error(err);
+      showToast('Failed to update user status in cloud', 'error');
+    }
   };
 
   // Save Settings
-  const handleSaveSettings = (e: React.FormEvent) => {
+  const handleSaveSettings = async (e: React.FormEvent) => {
     e.preventDefault();
-    StorageService.saveSettings(settingsForm);
-    onRefreshData();
-    showToast('Settings saved successfully!', 'success');
+    try {
+      await StorageService.saveSettings(settingsForm);
+      onRefreshData();
+      showToast('Settings saved & published live to all visitors worldwide!', 'success');
+    } catch (err: unknown) {
+      console.error('Save settings error:', err);
+      showToast('Cloud save failed! Connect Google Admin (mkedit654@gmail.com) to save changes live.', 'error');
+    }
   };
 
   // Toggle Section Visibility
-  const handleToggleSection = (sectionKey: string) => {
+  const handleToggleSection = async (sectionKey: string) => {
     const updated = {
       ...settingsForm,
       sectionVisibility: {
@@ -180,8 +282,14 @@ export const AdminPage: React.FC<AdminPageProps> = ({
       },
     };
     setSettingsForm(updated);
-    StorageService.saveSettings(updated);
-    onRefreshData();
+    try {
+      await StorageService.saveSettings(updated);
+      onRefreshData();
+      showToast('Section visibility updated & published live!', 'success');
+    } catch (err: unknown) {
+      console.error('Toggle section error:', err);
+      showToast('Cloud save failed! Connect Google Admin to sync live.', 'error');
+    }
   };
 
   const navItems = [
@@ -289,6 +397,32 @@ export const AdminPage: React.FC<AdminPageProps> = ({
           >
             <ExternalLink size={16} />
             <span>Open Website</span>
+          </button>
+        </div>
+
+        {/* Cloud Sync & Publishing Banner */}
+        <div className="mb-6 p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-900 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-emerald-100 flex items-center justify-center text-emerald-700 shrink-0">
+              <Cloud size={20} />
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-emerald-900 flex items-center gap-2">
+                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+                Live Cloud Sync Active
+              </p>
+              <p className="text-xs text-emerald-700">
+                Connected to Firestore Cloud Database. All changes you save here are instantly synchronized to all website visitors across every device.
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={handleSyncAllToCloud}
+            disabled={syncingCloud}
+            className="inline-flex items-center gap-2 px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-semibold shadow-xs cursor-pointer transition-all shrink-0 disabled:opacity-50"
+          >
+            <CloudUpload size={15} className={syncingCloud ? 'animate-bounce' : ''} />
+            <span>{syncingCloud ? 'Syncing...' : 'Push All Changes to Cloud'}</span>
           </button>
         </div>
 

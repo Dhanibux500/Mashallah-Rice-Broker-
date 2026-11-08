@@ -5,7 +5,7 @@ import { AuthPage } from './pages/AuthPage';
 import { SiteSettings, Product, FAQ, Testimonial, Lead, User } from './types';
 import { StorageService } from './storage';
 import { auth } from './firebase';
-import { signOut } from 'firebase/auth';
+import { signOut, onAuthStateChanged } from 'firebase/auth';
 
 export default function App() {
   const [currentPath, setCurrentPath] = useState<string>(() => {
@@ -60,7 +60,33 @@ export default function App() {
     window.addEventListener('mashallah_auth_change', handleStorageChange);
     window.addEventListener('popstate', handlePopState);
 
+    const unsubscribeAuth = onAuthStateChanged(auth, (fbUser) => {
+      if (fbUser && fbUser.email) {
+        const cleanEmail = fbUser.email.toLowerCase();
+        const isAdmin = cleanEmail === 'mkedit654@gmail.com' || cleanEmail === 'admin@mashallahbroker.com';
+        const users = StorageService.getUsers();
+        let profile = users.find((u) => u.email.toLowerCase() === cleanEmail);
+        if (!profile) {
+          profile = {
+            uid: fbUser.uid,
+            fullName: fbUser.displayName || (isAdmin ? 'Abdul Sattar Bhayo' : cleanEmail.split('@')[0]),
+            email: cleanEmail,
+            role: isAdmin ? 'admin' : 'user',
+            status: 'active',
+            createdAt: new Date().toISOString(),
+          };
+          StorageService.saveUser(profile).catch(console.error);
+        } else if (isAdmin && profile.role !== 'admin') {
+          profile.role = 'admin';
+          StorageService.saveUser(profile).catch(console.error);
+        }
+        StorageService.setCurrentUser(profile);
+        setCurrentUser(profile);
+      }
+    });
+
     return () => {
+      unsubscribeAuth();
       window.removeEventListener('mashallah_storage_change', handleStorageChange);
       window.removeEventListener('mashallah_auth_change', handleStorageChange);
       window.removeEventListener('popstate', handlePopState);

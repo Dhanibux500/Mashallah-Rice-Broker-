@@ -1,5 +1,5 @@
 import { Product, FAQ, Testimonial, SiteSettings, Lead, User } from './types';
-import { db, testFirestoreConnection } from './firebase';
+import { db, auth, testFirestoreConnection } from './firebase';
 import {
   collection,
   doc,
@@ -280,6 +280,54 @@ function setStored<T>(key: string, val: T): void {
   }
 }
 
+export enum OperationType {
+  CREATE = 'create',
+  UPDATE = 'update',
+  DELETE = 'delete',
+  LIST = 'list',
+  GET = 'get',
+  WRITE = 'write',
+}
+
+export interface FirestoreErrorInfo {
+  error: string;
+  operationType: OperationType;
+  path: string | null;
+  authInfo: {
+    userId?: string | null;
+    email?: string | null;
+    emailVerified?: boolean | null;
+    isAnonymous?: boolean | null;
+    tenantId?: string | null;
+    providerInfo?: {
+      providerId?: string | null;
+      email?: string | null;
+    }[];
+  };
+}
+
+export function handleFirestoreError(error: unknown, operationType: OperationType, path: string | null): never {
+  const errInfo: FirestoreErrorInfo = {
+    error: error instanceof Error ? error.message : String(error),
+    authInfo: {
+      userId: auth.currentUser?.uid,
+      email: auth.currentUser?.email,
+      emailVerified: auth.currentUser?.emailVerified,
+      isAnonymous: auth.currentUser?.isAnonymous,
+      tenantId: auth.currentUser?.tenantId,
+      providerInfo:
+        auth.currentUser?.providerData?.map((provider) => ({
+          providerId: provider.providerId,
+          email: provider.email,
+        })) || [],
+    },
+    operationType,
+    path,
+  };
+  console.error('Firestore Error: ', JSON.stringify(errInfo));
+  throw new Error(JSON.stringify(errInfo));
+}
+
 // Global initialization flag
 let isFirebaseInitialized = false;
 
@@ -294,7 +342,8 @@ export const StorageService = {
     try {
       await setDoc(doc(db, 'settings', 'main'), settings);
     } catch (err) {
-      console.warn('Firestore saveSettings failed:', err);
+      console.warn('Firestore saveSettings warning:', err);
+      handleFirestoreError(err, OperationType.WRITE, 'settings/main');
     }
   },
 
@@ -306,17 +355,19 @@ export const StorageService = {
   async saveProduct(product: Product): Promise<void> {
     const list = this.getProducts();
     const idx = list.findIndex((p) => p.id === product.id);
+    const itemToSave = idx >= 0 ? product : { ...product, order: list.length + 1 };
     if (idx >= 0) {
-      list[idx] = product;
+      list[idx] = itemToSave;
     } else {
-      list.push({ ...product, order: list.length + 1 });
+      list.push(itemToSave);
     }
     setStored(STORAGE_KEYS.PRODUCTS, list);
 
     try {
-      await setDoc(doc(db, 'products', product.id), product);
+      await setDoc(doc(db, 'products', itemToSave.id), itemToSave);
     } catch (err) {
-      console.warn('Firestore saveProduct failed:', err);
+      console.warn('Firestore saveProduct warning:', err);
+      handleFirestoreError(err, OperationType.WRITE, `products/${itemToSave.id}`);
     }
   },
 
@@ -327,7 +378,8 @@ export const StorageService = {
     try {
       await deleteDoc(doc(db, 'products', id));
     } catch (err) {
-      console.warn('Firestore deleteProduct failed:', err);
+      console.warn('Firestore deleteProduct warning:', err);
+      handleFirestoreError(err, OperationType.DELETE, `products/${id}`);
     }
   },
 
@@ -339,17 +391,19 @@ export const StorageService = {
   async saveFaq(faq: FAQ): Promise<void> {
     const list = this.getFaqs();
     const idx = list.findIndex((f) => f.id === faq.id);
+    const itemToSave = idx >= 0 ? faq : { ...faq, order: list.length + 1 };
     if (idx >= 0) {
-      list[idx] = faq;
+      list[idx] = itemToSave;
     } else {
-      list.push({ ...faq, order: list.length + 1 });
+      list.push(itemToSave);
     }
     setStored(STORAGE_KEYS.FAQS, list);
 
     try {
-      await setDoc(doc(db, 'faqs', faq.id), faq);
+      await setDoc(doc(db, 'faqs', itemToSave.id), itemToSave);
     } catch (err) {
-      console.warn('Firestore saveFaq failed:', err);
+      console.warn('Firestore saveFaq warning:', err);
+      handleFirestoreError(err, OperationType.WRITE, `faqs/${itemToSave.id}`);
     }
   },
 
@@ -360,7 +414,8 @@ export const StorageService = {
     try {
       await deleteDoc(doc(db, 'faqs', id));
     } catch (err) {
-      console.warn('Firestore deleteFaq failed:', err);
+      console.warn('Firestore deleteFaq warning:', err);
+      handleFirestoreError(err, OperationType.DELETE, `faqs/${id}`);
     }
   },
 
@@ -381,7 +436,8 @@ export const StorageService = {
     try {
       await setDoc(doc(db, 'testimonials', testimonial.id), testimonial);
     } catch (err) {
-      console.warn('Firestore saveTestimonial failed:', err);
+      console.warn('Firestore saveTestimonial warning:', err);
+      handleFirestoreError(err, OperationType.WRITE, `testimonials/${testimonial.id}`);
     }
   },
 
@@ -392,7 +448,31 @@ export const StorageService = {
     try {
       await deleteDoc(doc(db, 'testimonials', id));
     } catch (err) {
-      console.warn('Firestore deleteTestimonial failed:', err);
+      console.warn('Firestore deleteTestimonial warning:', err);
+      handleFirestoreError(err, OperationType.DELETE, `testimonials/${id}`);
+    }
+  },
+
+  /**
+   * Publishes all current local device data (settings, products, FAQs) directly to Firestore
+   * so all users worldwide immediately see the changes.
+   */
+  async syncAllLocalToCloud(): Promise<void> {
+    const currentSettings = this.getSettings();
+    const currentProducts = this.getProducts();
+    const currentFaqs = this.getFaqs();
+
+    try {
+      await setDoc(doc(db, 'settings', 'main'), currentSettings);
+      for (const prod of currentProducts) {
+        await setDoc(doc(db, 'products', prod.id), prod);
+      }
+      for (const faq of currentFaqs) {
+        await setDoc(doc(db, 'faqs', faq.id), faq);
+      }
+      window.dispatchEvent(new Event('mashallah_storage_change'));
+    } catch (err) {
+      handleFirestoreError(err, OperationType.WRITE, 'syncAllLocalToCloud');
     }
   },
 

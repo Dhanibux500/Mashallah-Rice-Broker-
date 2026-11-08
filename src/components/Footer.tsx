@@ -10,7 +10,7 @@ export const Footer: React.FC<FooterProps> = ({ settings }) => {
 
   return (
     <>
-      <footer className="bg-gray-950 text-gray-400 py-12 border-t border-gray-800">
+      <footer className="bg-slate-950 text-slate-400 py-12 border-t border-slate-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row justify-between items-center gap-6">
             {/* Logo and Brand */}
@@ -23,11 +23,11 @@ export const Footer: React.FC<FooterProps> = ({ settings }) => {
                   referrerPolicy="no-referrer"
                 />
               ) : (
-                <div className="w-8 h-8 bg-secondary rounded flex items-center justify-center text-gray-950 font-bold font-serif">
+                <div className="w-9 h-9 bg-gradient-to-br from-emerald-600 to-emerald-800 rounded-xl flex items-center justify-center text-white font-bold font-display shadow-xs ring-1 ring-emerald-500/20">
                   M
                 </div>
               )}
-              <span className="font-serif font-bold text-xl text-white">
+              <span className="font-display font-extrabold text-xl text-white tracking-tight">
                 Mashallah Broker
               </span>
             </div>

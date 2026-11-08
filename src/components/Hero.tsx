@@ -182,12 +182,23 @@ export const Hero: React.FC<HeroProps> = ({ settings }) => {
         3. Hero Content 
         Readable with drop shadows over clear video & poster imagery.
       */}
-      <div className="relative z-20 text-center px-4 max-w-4xl mx-auto">
+      <div className="relative z-20 text-center px-4 max-w-4xl mx-auto flex flex-col items-center">
+        {/* Modern Kicker Tag matching developer reference */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.1 }}
+          className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs sm:text-sm font-semibold tracking-wide bg-slate-900/60 backdrop-blur-md text-amber-300 border border-amber-400/30 mb-6 drop-shadow-md"
+        >
+          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+          <span>Pakistan's Premier Grain Broker · Est. 2005</span>
+        </motion.div>
+
         <motion.h1
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.2 }}
-          className="text-4xl sm:text-5xl md:text-7xl font-serif font-bold text-white mb-6 leading-tight drop-shadow-[0_4px_16px_rgba(0,0,0,0.85)]"
+          className="text-4xl sm:text-6xl md:text-7xl font-display font-extrabold text-white mb-6 leading-[1.08] tracking-tight drop-shadow-[0_4px_24px_rgba(0,0,0,0.85)]"
         >
           {settings.heroHeading}
         </motion.h1>
@@ -196,7 +207,7 @@ export const Hero: React.FC<HeroProps> = ({ settings }) => {
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.4 }}
-          className="text-lg sm:text-xl md:text-2xl text-gray-100 mb-8 font-light max-w-2xl mx-auto drop-shadow-[0_2px_12px_rgba(0,0,0,0.85)]"
+          className="text-base sm:text-xl md:text-2xl text-slate-100 mb-8 font-normal max-w-2xl mx-auto drop-shadow-[0_2px_12px_rgba(0,0,0,0.85)] leading-relaxed"
         >
           {settings.heroSubheading}
         </motion.p>
@@ -208,7 +219,7 @@ export const Hero: React.FC<HeroProps> = ({ settings }) => {
         >
           <button
             onClick={scrollToProducts}
-            className="inline-flex items-center gap-2 bg-secondary text-gray-900 font-bold px-8 py-4 rounded-full text-lg hover:bg-secondary-hover shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-1 cursor-pointer"
+            className="inline-flex items-center gap-2.5 bg-gradient-to-r from-amber-400 via-amber-500 to-amber-600 hover:from-amber-300 hover:to-amber-500 text-slate-950 font-bold px-8 py-3.5 sm:py-4 rounded-xl text-base sm:text-lg shadow-[0_10px_25px_-5px_rgba(245,158,11,0.5)] hover:shadow-[0_16px_32px_-5px_rgba(245,158,11,0.65)] hover:-translate-y-0.5 transition-all cursor-pointer border border-amber-300/40 font-display"
           >
             <span>View Our Products</span>
             <ChevronDown size={20} className="animate-bounce" />
