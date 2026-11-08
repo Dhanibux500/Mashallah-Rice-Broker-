@@ -66,7 +66,7 @@ export const ProductsSection: React.FC<ProductsSectionProps> = ({
               <div className="h-64 overflow-hidden relative bg-slate-100">
                 <img
                   src={prod.imageUrl}
-                  alt={prod.name}
+                  alt={`${prod.name} – Verified Rice Trade in Pakistan | Mashallah Rice Broker`}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                   referrerPolicy="no-referrer"
                   loading="lazy"

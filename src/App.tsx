@@ -2,6 +2,8 @@ import { useState, useEffect, useCallback } from 'react';
 import { HomePage } from './pages/HomePage';
 import { AdminPage } from './pages/AdminPage';
 import { AuthPage } from './pages/AuthPage';
+import { PrivacyPage } from './pages/PrivacyPage';
+import { TermsPage } from './pages/TermsPage';
 import { SiteSettings, Product, FAQ, Testimonial, Lead, User } from './types';
 import { StorageService } from './storage';
 import { auth } from './firebase';
@@ -19,6 +21,23 @@ export default function App() {
   const [leads, setLeads] = useState<Lead[]>(() => StorageService.getLeads());
   const [users, setUsers] = useState<User[]>(() => StorageService.getUsers());
   const [currentUser, setCurrentUser] = useState<User | null>(() => StorageService.getCurrentUser());
+
+  // Enforce noindex ONLY on /admin and /auth; all public pages remain indexable
+  useEffect(() => {
+    let robotsMeta = document.querySelector('meta[name="robots"]');
+    if (currentPath === '/admin' || currentPath === '/auth') {
+      if (!robotsMeta) {
+        robotsMeta = document.createElement('meta');
+        robotsMeta.setAttribute('name', 'robots');
+        document.head.appendChild(robotsMeta);
+      }
+      robotsMeta.setAttribute('content', 'noindex, nofollow');
+    } else {
+      if (robotsMeta) {
+        robotsMeta.remove();
+      }
+    }
+  }, [currentPath]);
 
   const loadData = useCallback(() => {
     const s = StorageService.getSettings();
@@ -165,6 +184,28 @@ export default function App() {
         onNavigate={navigate}
         onLogout={handleLogout}
         onRefreshData={loadData}
+      />
+    );
+  }
+
+  if (currentPath === '/privacy-policy') {
+    return (
+      <PrivacyPage
+        settings={settings}
+        currentUser={currentUser}
+        onNavigate={navigate}
+        onLogout={handleLogout}
+      />
+    );
+  }
+
+  if (currentPath === '/terms') {
+    return (
+      <TermsPage
+        settings={settings}
+        currentUser={currentUser}
+        onNavigate={navigate}
+        onLogout={handleLogout}
       />
     );
   }

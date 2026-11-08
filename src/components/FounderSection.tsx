@@ -23,10 +23,11 @@ export const FounderSection: React.FC<FounderSectionProps> = ({ settings }) => {
             <div className="absolute inset-0 rounded-3xl bg-gradient-to-tr from-amber-400 to-amber-200 transform rotate-6 opacity-40 blur-xs" />
             <div className="absolute inset-0 rounded-3xl border-2 border-amber-500/30 transform -rotate-3" />
             <img
-              src={settings.ownerPhotoUrl || 'https://randomuser.me/api/portraits/men/32.jpg'}
-              alt="Abdul Sattar Bhayo"
+              src={settings.ownerPhotoUrl || '/abdul-sattar-bhayo-rice-broker.jpg'}
+              alt="Abdul Sattar Bhayo, founder of Mashallah Rice Broker"
               className="w-full h-full object-cover rounded-3xl relative z-10 shadow-[0_12px_32px_-4px_rgba(0,0,0,0.12)] border-2 border-white"
               referrerPolicy="no-referrer"
+              loading="lazy"
             />
           </motion.div>
 

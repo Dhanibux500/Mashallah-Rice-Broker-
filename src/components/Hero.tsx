@@ -200,7 +200,7 @@ export const Hero: React.FC<HeroProps> = ({ settings }) => {
           transition={{ duration: 0.8, delay: 0.2 }}
           className="text-4xl sm:text-6xl md:text-7xl font-display font-extrabold text-white mb-6 leading-[1.08] tracking-tight drop-shadow-[0_4px_24px_rgba(0,0,0,0.85)]"
         >
-          {settings.heroHeading}
+          {settings.heroHeading || "Mashallah Rice Broker – Trusted Rice Broker in Pakistan"}
         </motion.h1>
 
         <motion.p

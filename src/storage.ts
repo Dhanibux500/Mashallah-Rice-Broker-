@@ -23,43 +23,43 @@ const STORAGE_KEYS = {
 
 const DEFAULT_SETTINGS: SiteSettings = {
   id: 'main',
-  heroHeading: 'Mashallah Broker – Premium Gutka Rice Since 2005',
-  heroSubheading: 'Connecting global buyers with the finest rice from Pakistan.',
+  heroHeading: 'Mashallah Rice Broker – Trusted Rice Broker in Pakistan',
+  heroSubheading: 'Connecting genuine rice buyers and verified mills across all Pakistan. 15+ years of trusted grain brokerage.',
   heroBannerUrl: 'https://images.unsplash.com/photo-1595113316349-9fa4eb24f884?auto=format&fit=crop&q=80&w=2000',
   ownerBio:
-    'With over two decades of experience in the rice trade, I ensure that every grain meets the highest standards of quality. My commitment is to build long-term relationships based on trust and excellence.',
-  ownerPhotoUrl: 'https://randomuser.me/api/portraits/men/32.jpg',
+    'With over 15 years of dedicated brokerage experience in Pakistan’s major grain markets, I personally facilitate transparent, secure deals between rice mills, exporters, and buyers. Based in Mirpur Mathelo, Sindh, we verify quality, coordinate fair pricing, and ensure seamless delivery nationwide.',
+  ownerPhotoUrl: '/abdul-sattar-bhayo-rice-broker.jpg',
   aboutText:
-    'Mashallah Broker started with a simple mission: to provide the world with the finest quality rice directly from the fertile lands of Pakistan. Over the years, we have grown into a trusted name in the global rice market, known for our integrity, quality, and customer-centric approach.',
+    'Mashallah Rice Broker is an established rice brokerage firm founded by Abdul Sattar Bhayo, headquartered in Mirpur Mathelo, Sindh, providing brokerage services across all Pakistan. With over 15 years of market presence, we are an independent brokerage firm (not sellers or exporters). We bridge the gap between verified rice millers and genuine wholesale buyers, helping both parties negotiate transparent prices, verify physical grain samples, and coordinate secure delivery and payment. We earn our brokerage commission from both sides only after each deal is successfully concluded.',
   whyChooseUsItems: [
     {
-      title: 'Quality Testing',
+      title: 'Verified Mill Network',
       icon: 'ShieldCheck',
-      description: 'Rigorous quality checks at every stage.',
+      description: 'Direct connections with vetted, authentic rice mills and traders across Punjab and Sindh.',
     },
     {
-      title: 'Direct Mill Prices',
+      title: 'Transparent Market Rates',
       icon: 'TrendingDown',
-      description: 'Competitive pricing directly from mills.',
+      description: 'Daily market intelligence and fair rate negotiation without hidden markups.',
     },
     {
-      title: 'All Pakistan delivery',
+      title: 'All Pakistan Service',
       icon: 'Truck',
-      description: 'Reliable and timely delivery nationwide.',
+      description: 'Covering Karachi, Lahore, Gujranwala, Hafizabad, Larkana, and all nationwide grain hubs.',
     },
     {
-      title: '24/7 Support',
+      title: 'Sample & Quality Checks',
       icon: 'Headset',
-      description: 'Always available to assist you.',
+      description: 'Physical grain inspection, moisture check, and honest sample verification before dispatch.',
     },
   ],
-  contactAddress: 'Karachi, Pakistan',
-  contactPhone: '+92 300 1234567',
+  contactAddress: 'Main Grain Market, Mirpur Mathelo, Sindh, Pakistan (Service Area: All Pakistan)',
+  contactPhone: '03058102365 / 0333 3643891',
   contactEmail: 'info@mashallahbroker.com',
-  locationMapUrl: 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d462562.8478711867!2d66.86278854415842!3d25.19320239617303!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3eb33e06651d4bbf%3A0x9cf92f44555a0c23!2sKarachi%2C%20Karachi%20City%2C%20Sindh%2C%20Pakistan!5e0!3m2!1sen!2s!4v1700000000000',
+  locationMapUrl: 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d113426.31427845781!2d69.4589979!3d27.9942478!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x393699b7f52478b1%3A0xe54e207b588db652!2sMirpur%20Mathelo%2C%20Ghotki%2C%20Sindh%2C%20Pakistan!5e0!3m2!1sen!2s!4v1700000000000',
   socialLinks: {
     facebook: 'https://facebook.com',
-    whatsapp: 'https://wa.me/923001234567',
+    whatsapp: 'https://wa.me/923058102365',
     linkedin: 'https://linkedin.com',
     instagram: 'https://instagram.com',
     youtube: 'https://youtube.com',
@@ -82,62 +82,62 @@ const DEFAULT_SETTINGS: SiteSettings = {
 const DEFAULT_PRODUCTS: Product[] = [
   {
     id: 'prod1',
-    name: 'Basmati',
-    origin: 'Pakistan',
-    price: '1200 USD/Ton',
+    name: 'Super Kernel Basmati Rice',
+    origin: 'Punjab, Pakistan',
+    price: 'Market Competitive Rate',
     imageUrl:
       'https://images.unsplash.com/photo-1586201375761-83865001e31c?auto=format&fit=crop&q=80&w=800',
-    description: 'Premium long-grain Basmati rice.',
+    description: 'Long aromatic grain, exceptional cooking length, ideal for export and premium domestic dining.',
     order: 1,
   },
   {
     id: 'prod2',
-    name: '1121 Steam',
-    origin: 'Lahore',
-    price: '1100 USD/Ton',
+    name: '1121 Kainat Steam Rice',
+    origin: 'Punjab / Sindh, Pakistan',
+    price: 'Market Competitive Rate',
     imageUrl:
       'https://images.unsplash.com/photo-1536304929831-ee1ca9d44906?auto=format&fit=crop&q=80&w=800',
-    description: 'Extra long grain steam rice.',
+    description: 'Extra-long grain 1121 steam rice with superior elongation, non-sticky texture, and high yield.',
     order: 2,
   },
   {
     id: 'prod3',
-    name: 'Irri-6',
-    origin: 'Sindh',
-    price: '450 USD/Ton',
+    name: 'Irri-6 White & Parboiled Rice',
+    origin: 'Sindh, Pakistan',
+    price: 'Direct Mill Rate',
     imageUrl:
       'https://images.unsplash.com/photo-1596558450255-7c0b7be9d56a?auto=format&fit=crop&q=80&w=800',
-    description: 'High quality white rice.',
+    description: 'Popular non-basmati long grain variety suited for mass catering, commercial trade, and bulk African/Middle East export.',
     order: 3,
   },
   {
     id: 'prod4',
-    name: 'Super Kernel',
-    origin: 'Punjab',
-    price: '1050 USD/Ton',
+    name: 'Irri-9 Long Grain Rice',
+    origin: 'Sindh / Punjab, Pakistan',
+    price: 'Direct Mill Rate',
     imageUrl:
       'https://images.unsplash.com/photo-1586201375761-83865001e31c?auto=format&fit=crop&q=80&w=800',
-    description: 'Aromatic super kernel basmati.',
+    description: 'Fine non-basmati long slender grain with excellent cooking properties at an economical market rate.',
     order: 4,
   },
   {
     id: 'prod5',
-    name: 'Brown Rice Organic',
-    origin: 'Pakistan',
-    price: '900 USD/Ton',
+    name: 'Gutka / Sella Rice (Golden & Creamy)',
+    origin: 'Sindh / Punjab, Pakistan',
+    price: 'Market Competitive Rate',
     imageUrl:
-      'https://images.unsplash.com/photo-1536304929831-ee1ca9d44906?auto=format&fit=crop&q=80&w=800',
-    description: 'Healthy organic brown rice.',
+      'https://images.unsplash.com/photo-1596558450255-7c0b7be9d56a?auto=format&fit=crop&q=80&w=800',
+    description: 'Specialty parboiled sella and gutka rice varieties processed for strong durability and rich pilaf/biryani preparation.',
     order: 5,
   },
   {
     id: 'prod6',
-    name: 'Sella Rice',
-    origin: 'Gujranwala',
-    price: '950 USD/Ton',
+    name: 'Parboiled (Sella) Long Grain Rice',
+    origin: 'Pakistan Nationwide',
+    price: 'Market Competitive Rate',
     imageUrl:
-      'https://images.unsplash.com/photo-1596558450255-7c0b7be9d56a?auto=format&fit=crop&q=80&w=800',
-    description: 'Parboiled sella rice.',
+      'https://images.unsplash.com/photo-1536304929831-ee1ca9d44906?auto=format&fit=crop&q=80&w=800',
+    description: 'Nutrient-retained hydrothermal treated rice with hard grain resistance to breakage during cooking.',
     order: 6,
   },
 ];
@@ -145,37 +145,73 @@ const DEFAULT_PRODUCTS: Product[] = [
 const DEFAULT_FAQS: FAQ[] = [
   {
     id: 'faq1',
-    question: 'What is the minimum order quantity?',
+    question: 'What does a rice broker do in Pakistan?',
     answer:
-      'Our minimum order quantity is typically 1 container (approx 20-25 tons) depending on the rice variety.',
+      'A rice broker acts as an independent intermediary between rice buyers (wholesalers, exporters, retail brands) and rice sellers (mills, processors, stockists). Mashallah Rice Broker, led by Abdul Sattar Bhayo, connects genuine parties, assists in price discovery, inspects sample quality, coordinates contract terms, and facilitates smooth delivery across Pakistan.',
     order: 1,
   },
   {
     id: 'faq2',
-    question: 'Do you provide samples?',
-    answer: 'Yes, we provide samples upon request. Shipping charges for samples may apply.',
+    question: 'How do you help rice buyers find verified sellers and mills?',
+    answer:
+      'With over 15 years in the grain market, we have direct personal relationships with reputable rice mills across Sindh and Punjab. When a buyer specifies variety, grain length, and volume, we match them with verified suppliers capable of fulfilling the order with consistent quality and reliable dispatch.',
     order: 2,
   },
   {
     id: 'faq3',
-    question: 'What are your payment terms?',
+    question: 'How do rice mills and sellers find genuine buyers through your brokerage?',
     answer:
-      'We usually work with Letter of Credit (L/C) at sight or Advance TT. Terms can be discussed based on the order volume.',
+      'We maintain an active network of vetted wholesale buyers, exporters, and domestic traders seeking continuous grain supply. We introduce ready buyers with confirmed purchasing intent, negotiate market-aligned prices, and facilitate contracts so millers can sell inventory rapidly.',
     order: 3,
   },
   {
     id: 'faq4',
-    question: 'How long does shipping take?',
+    question: 'How does the brokerage commission work?',
     answer:
-      'Shipping times vary depending on the destination. Typically, it takes 15-30 days after order confirmation and payment.',
+      'As a professional brokerage firm, we earn a standard commission paid by both the buyer and the seller only after a trade is successfully concluded and agreed upon. This ensures our interests are completely aligned with delivering honest terms and a smooth transaction for both parties.',
     order: 4,
   },
   {
     id: 'faq5',
-    question: 'Is your rice certified?',
+    question: 'Is it safe to trade rice through Abdul Sattar Bhayo and Mashallah Rice Broker?',
     answer:
-      'Yes, our rice goes through strict quality testing and we can provide necessary certifications (SGS, Phytosanitary, etc.) upon request.',
+      'Yes, absolute safety and trust are the cornerstones of our 15+ years of operation. We vet both sides of every transaction, inspect physical samples before loading, ensure mutual clarity on delivery terms, and remain personally reachable at all times until the truck arrives and payment is settled.',
     order: 5,
+  },
+  {
+    id: 'faq6',
+    question: 'Which varieties of Pakistani rice do you broker?',
+    answer:
+      'We broker all major Pakistani rice varieties including Super Kernel Basmati, 1121 Kainat (Steam, Sella, White), Irri-6, Irri-9, Gutka/Sella, Parboiled rice, Brown rice, and D-98, sourced from top harvesting belts in Punjab and Sindh.',
+    order: 6,
+  },
+  {
+    id: 'faq7',
+    question: 'Can you assist with rice sample testing and quality verification?',
+    answer:
+      'Yes. Quality verification is an essential part of our brokerage service. We coordinate physical sample exchange, verify grain elongation, check moisture levels, inspect broken percentage, and confirm that dispatch matches agreed specifications.',
+    order: 7,
+  },
+  {
+    id: 'faq8',
+    question: 'Where is Mashallah Rice Broker located, and what areas do you serve?',
+    answer:
+      'Our central brokerage desk is based in Mirpur Mathelo, Sindh, Pakistan. We actively serve clients nationwide, connecting mills and buyers in Karachi, Lahore, Gujranwala, Hafizabad, Larkana, Sukkur, Faisalabad, and all major commercial ports.',
+    order: 8,
+  },
+  {
+    id: 'faq9',
+    question: 'How are payment and delivery coordinated?',
+    answer:
+      'We coordinate delivery schedules, truck loading, weight-bridge slips, and dispatch documentation. We assist both parties in establishing clear, mutually agreeable payment schedules (such as advance bank transfers, sight settlement, or delivery confirmation) so trade proceeds without dispute.',
+    order: 9,
+  },
+  {
+    id: 'faq10',
+    question: 'How do I start buying or selling rice through Mashallah Rice Broker?',
+    answer:
+      'Simply call or WhatsApp Abdul Sattar Bhayo directly at 03058102365 (or 0333 3643891). You can also submit the inquiry form on our website with your required variety, destination, and volume, and our brokerage desk will get in touch immediately.',
+    order: 10,
   },
 ];
 
@@ -706,45 +742,63 @@ export const StorageService = {
       (error) => console.warn('Testimonials sync error:', error)
     );
 
-    // 5. Sync Leads (Secured: Only authenticated Admin can read)
-    onSnapshot(
-      collection(db, 'leads'),
-      (snap) => {
-        if (!snap.empty) {
-          const list: Lead[] = [];
-          snap.forEach((d) => {
-            list.push(d.data() as Lead);
-          });
-          list.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-          setStored(STORAGE_KEYS.LEADS, list);
-        }
-      },
-      (error) => {
-        // Expected for unauthenticated visitors: leads are confidential to admin
-        if (error.code !== 'permission-denied') {
-          console.warn('Leads sync:', error.message);
-        }
-      }
-    );
+    // 5. Sync Secured Collections (Leads & Users: Only when authenticated)
+    let unsubscribeLeads: (() => void) | null = null;
+    let unsubscribeUsers: (() => void) | null = null;
 
-    // 6. Sync Users (Secured: Restricted by rules)
-    onSnapshot(
-      collection(db, 'users'),
-      (snap) => {
-        if (!snap.empty) {
-          const list: User[] = [];
-          snap.forEach((d) => {
-            list.push(d.data() as User);
-          });
-          list.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-          setStored(STORAGE_KEYS.USERS, list);
+    auth.onAuthStateChanged((user) => {
+      if (user) {
+        if (!unsubscribeLeads) {
+          unsubscribeLeads = onSnapshot(
+            collection(db, 'leads'),
+            (snap) => {
+              if (!snap.empty) {
+                const list: Lead[] = [];
+                snap.forEach((d) => {
+                  list.push(d.data() as Lead);
+                });
+                list.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+                setStored(STORAGE_KEYS.LEADS, list);
+              }
+            },
+            (error) => {
+              if (error.code !== 'permission-denied') {
+                console.warn('Leads sync:', error.message);
+              }
+            }
+          );
         }
-      },
-      (error) => {
-        if (error.code !== 'permission-denied') {
-          console.warn('Users sync:', error.message);
+
+        if (!unsubscribeUsers) {
+          unsubscribeUsers = onSnapshot(
+            collection(db, 'users'),
+            (snap) => {
+              if (!snap.empty) {
+                const list: User[] = [];
+                snap.forEach((d) => {
+                  list.push(d.data() as User);
+                });
+                list.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+                setStored(STORAGE_KEYS.USERS, list);
+              }
+            },
+            (error) => {
+              if (error.code !== 'permission-denied') {
+                console.warn('Users sync:', error.message);
+              }
+            }
+          );
+        }
+      } else {
+        if (unsubscribeLeads) {
+          unsubscribeLeads();
+          unsubscribeLeads = null;
+        }
+        if (unsubscribeUsers) {
+          unsubscribeUsers();
+          unsubscribeUsers = null;
         }
       }
-    );
+    });
   },
 };
