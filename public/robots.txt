@@ -3,4 +3,4 @@ Allow: /
 Disallow: /admin
 Disallow: /auth
 
-Sitemap: https://mashallahbroker.com/sitemap.xml
+Sitemap: https://mashallah-broker.vercel.app/sitemap.xml
