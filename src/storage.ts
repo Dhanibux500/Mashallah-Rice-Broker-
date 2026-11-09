@@ -28,7 +28,7 @@ const DEFAULT_SETTINGS: SiteSettings = {
   heroBannerUrl: 'https://images.unsplash.com/photo-1595113316349-9fa4eb24f884?auto=format&fit=crop&q=80&w=2000',
   ownerBio:
     'With over 15 years of dedicated brokerage experience in Pakistan’s major grain markets, I personally facilitate transparent, secure deals between rice mills, exporters, and buyers. Based in Mirpur Mathelo, Sindh, we verify quality, coordinate fair pricing, and ensure seamless delivery nationwide.',
-  ownerPhotoUrl: '/abdul-sattar-bhayo-rice-broker.jpg',
+  ownerPhotoUrl: '/abdul-sattar-bhayo-rice-broker.png',
   aboutText:
     'Mashallah Rice Broker is an established rice brokerage firm founded by Abdul Sattar Bhayo, headquartered in Mirpur Mathelo, Sindh, providing brokerage services across all Pakistan. With over 15 years of market presence, we are an independent brokerage firm (not sellers or exporters). We bridge the gap between verified rice millers and genuine wholesale buyers, helping both parties negotiate transparent prices, verify physical grain samples, and coordinate secure delivery and payment. We earn our brokerage commission from both sides only after each deal is successfully concluded.',
   whyChooseUsItems: [
@@ -370,7 +370,11 @@ let isFirebaseInitialized = false;
 export const StorageService = {
   // Synchronous getters from local cache for instant UI rendering
   getSettings(): SiteSettings {
-    return getStored<SiteSettings>(STORAGE_KEYS.SETTINGS, DEFAULT_SETTINGS);
+    const s = getStored<SiteSettings>(STORAGE_KEYS.SETTINGS, DEFAULT_SETTINGS);
+    if (!s.ownerPhotoUrl || s.ownerPhotoUrl.includes('abdul-sattar-bhayo-rice-broker')) {
+      s.ownerPhotoUrl = '/abdul-sattar-bhayo-rice-broker.png';
+    }
+    return s;
   },
 
   async saveSettings(settings: SiteSettings): Promise<void> {
@@ -661,7 +665,8 @@ export const StorageService = {
     if (isFirebaseInitialized) return;
     isFirebaseInitialized = true;
 
-    testFirestoreConnection();
+    // Test connection asynchronously without blocking UI
+    testFirestoreConnection().catch(() => {});
 
     // 1. Sync Settings
     onSnapshot(
@@ -670,13 +675,19 @@ export const StorageService = {
         if (snap.exists()) {
           const val = snap.data() as SiteSettings;
           setStored(STORAGE_KEYS.SETTINGS, val);
-        } else {
-          // First time initialization: seed default settings to cloud
+        } else if (!snap.metadata.fromCache) {
+          // First time initialization: seed default settings only after server confirms document does not exist
           const current = StorageService.getSettings();
-          setDoc(doc(db, 'settings', 'main'), current).catch(console.error);
+          setDoc(doc(db, 'settings', 'main'), current).catch((e) =>
+            console.warn('[Sync] Settings seed notice:', e?.message || e)
+          );
         }
       },
-      (error) => console.warn('Settings sync error:', error)
+      (error) => {
+        if (error.code !== 'unavailable') {
+          console.warn('Settings sync:', error.message);
+        }
+      }
     );
 
     // 2. Sync Products
@@ -690,15 +701,21 @@ export const StorageService = {
           });
           list.sort((a, b) => a.order - b.order);
           setStored(STORAGE_KEYS.PRODUCTS, list);
-        } else {
-          // First time initialization: seed default products to cloud
+        } else if (!snap.metadata.fromCache) {
+          // First time initialization: seed default products to cloud only if server confirms collection empty
           const current = StorageService.getProducts();
           current.forEach((prod) => {
-            setDoc(doc(db, 'products', prod.id), prod).catch(console.error);
+            setDoc(doc(db, 'products', prod.id), prod).catch((e) =>
+              console.warn('[Sync] Product seed notice:', e?.message || e)
+            );
           });
         }
       },
-      (error) => console.warn('Products sync error:', error)
+      (error) => {
+        if (error.code !== 'unavailable') {
+          console.warn('Products sync:', error.message);
+        }
+      }
     );
 
     // 3. Sync FAQs
@@ -712,14 +729,20 @@ export const StorageService = {
           });
           list.sort((a, b) => a.order - b.order);
           setStored(STORAGE_KEYS.FAQS, list);
-        } else {
+        } else if (!snap.metadata.fromCache) {
           const current = StorageService.getFaqs();
           current.forEach((faq) => {
-            setDoc(doc(db, 'faqs', faq.id), faq).catch(console.error);
+            setDoc(doc(db, 'faqs', faq.id), faq).catch((e) =>
+              console.warn('[Sync] FAQ seed notice:', e?.message || e)
+            );
           });
         }
       },
-      (error) => console.warn('FAQs sync error:', error)
+      (error) => {
+        if (error.code !== 'unavailable') {
+          console.warn('FAQs sync:', error.message);
+        }
+      }
     );
 
     // 4. Sync Testimonials
@@ -732,14 +755,20 @@ export const StorageService = {
             list.push(d.data() as Testimonial);
           });
           setStored(STORAGE_KEYS.TESTIMONIALS, list);
-        } else {
+        } else if (!snap.metadata.fromCache) {
           const current = StorageService.getTestimonials();
           current.forEach((test) => {
-            setDoc(doc(db, 'testimonials', test.id), test).catch(console.error);
+            setDoc(doc(db, 'testimonials', test.id), test).catch((e) =>
+              console.warn('[Sync] Testimonial seed notice:', e?.message || e)
+            );
           });
         }
       },
-      (error) => console.warn('Testimonials sync error:', error)
+      (error) => {
+        if (error.code !== 'unavailable') {
+          console.warn('Testimonials sync:', error.message);
+        }
+      }
     );
 
     // 5. Sync Secured Collections (Leads & Users: Only when authenticated)

@@ -12,23 +12,25 @@ export const FounderSection: React.FC<FounderSectionProps> = ({ settings }) => {
     <section className="py-20 sm:py-24 bg-white border-b border-slate-100">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col md:flex-row items-center gap-12 lg:gap-16">
-          {/* Photo with Decorative Ring */}
+          {/* Photo with 4 Rounded Corners ('4 Kono ma Gol') */}
           <motion.div
-            initial={{ opacity: 0, x: -40 }}
-            whileInView={{ opacity: 1, x: 0 }}
+            initial={{ opacity: 0, scale: 0.95 }}
+            whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-            className="w-48 h-48 md:w-60 md:h-60 shrink-0 relative"
+            transition={{ duration: 0.5 }}
+            className="w-52 h-52 sm:w-60 sm:h-60 md:w-64 md:h-64 shrink-0 relative"
           >
-            <div className="absolute inset-0 rounded-3xl bg-gradient-to-tr from-amber-400 to-amber-200 transform rotate-6 opacity-40 blur-xs" />
-            <div className="absolute inset-0 rounded-3xl border-2 border-amber-500/30 transform -rotate-3" />
-            <img
-              src={settings.ownerPhotoUrl || '/abdul-sattar-bhayo-rice-broker.jpg'}
-              alt="Abdul Sattar Bhayo, founder of Mashallah Rice Broker"
-              className="w-full h-full object-cover rounded-3xl relative z-10 shadow-[0_12px_32px_-4px_rgba(0,0,0,0.12)] border-2 border-white"
-              referrerPolicy="no-referrer"
-              loading="lazy"
-            />
+            {/* Subtle soft backdrop glow */}
+            <div className="absolute -inset-1.5 rounded-[32px] bg-gradient-to-tr from-emerald-600/20 via-amber-400/25 to-emerald-500/10 blur-sm" />
+            <div className="relative w-full h-full rounded-[28px] overflow-hidden shadow-2xl ring-4 ring-amber-400/30 border-4 border-white bg-slate-100">
+              <img
+                src={settings.ownerPhotoUrl || '/abdul-sattar-bhayo-rice-broker.png'}
+                alt="Abdul Sattar Bhayo, founder of Mashallah Rice Broker"
+                className="w-full h-full object-cover object-top"
+                referrerPolicy="no-referrer"
+                loading="lazy"
+              />
+            </div>
           </motion.div>
 
           {/* Founder Bio & Details */}

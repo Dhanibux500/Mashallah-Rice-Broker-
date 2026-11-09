@@ -11,11 +11,11 @@ import firebaseConfig from '../firebase-applet-config.json';
 
 const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
 
-// Connect to the provisioned database ID with persistent cache and experimentalForceLongPolling to avoid 10-second timeout on 3G / mobile networks
+// Connect to the provisioned database ID with persistent cache and auto-detect long polling
 export const db = initializeFirestore(
   app,
   {
-    experimentalForceLongPolling: true,
+    experimentalAutoDetectLongPolling: true,
     localCache: persistentLocalCache({
       tabManager: persistentMultipleTabManager(),
     }),
@@ -31,22 +31,22 @@ export async function signInWithGooglePopup() {
   return await signInWithPopup(auth, googleProvider);
 }
 
-// Connection test helper with defensive timeout to prevent 10s hang on slow 3G/offline
-export async function testFirestoreConnection() {
+// Connection test helper following firebase-integration-rpc guidelines
+export async function testFirestoreConnection(): Promise<void> {
   try {
-    const timeoutPromise = new Promise((_, reject) =>
-      setTimeout(() => reject(new Error('the client is offline (timeout)')), 3500)
-    );
-    await Promise.race([
-      getDocFromServer(doc(db, 'test', 'connection')),
-      timeoutPromise,
-    ]);
+    await getDocFromServer(doc(db, 'test', 'connection'));
     console.log('[Firestore] Connected to online database successfully.');
-  } catch (error) {
-    if (error instanceof Error && (error.message.includes('offline') || error.message.includes('timeout'))) {
-      console.warn('[Firestore] Operating with resilient local cache & long-polling.');
+  } catch (error: any) {
+    if (
+      error instanceof Error &&
+      (error.message.includes('the client is offline') ||
+        error.message.includes('unavailable') ||
+        error.message.includes('timeout') ||
+        (error as any).code === 'unavailable')
+    ) {
+      console.warn('[Firestore] Operating with persistent local cache in offline/resilient mode.');
     } else {
-      console.log('[Firestore] Ready.');
+      console.log('[Firestore] Cache ready.');
     }
   }
 }
