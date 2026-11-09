@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'motion/react';
-import { ArrowLeft, KeyRound, ShieldAlert, CheckCircle2 } from 'lucide-react';
+import { ArrowLeft, ShieldAlert, CheckCircle2 } from 'lucide-react';
 import { User } from '../types';
 import { StorageService } from '../storage';
 import { auth, signInWithGooglePopup } from '../firebase';
@@ -200,58 +200,6 @@ export const AuthPage: React.FC<AuthPageProps> = ({
     }
   };
 
-  const handleQuickAdminLogin = async () => {
-    setEmail('admin@mashallahBroker.com');
-    setPassword('Admin123!');
-    setLoading(true);
-    setErrorMsg('');
-
-    try {
-      const adminEmail = 'admin@mashallahbroker.com';
-      let uid = 'user_admin';
-      try {
-        const cred = await signInWithEmailAndPassword(auth, adminEmail, 'Admin123!');
-        uid = cred.user.uid;
-      } catch {
-        try {
-          const newCred = await createUserWithEmailAndPassword(auth, adminEmail, 'Admin123!');
-          uid = newCred.user.uid;
-        } catch {
-          // Fallback if existing
-        }
-      }
-
-      const adminUser: User = {
-        uid: uid,
-        fullName: 'Abdul Sattar Bhayo',
-        email: 'admin@mashallahBroker.com',
-        role: 'admin',
-        status: 'active',
-        createdAt: new Date().toISOString(),
-      };
-      await StorageService.saveUser(adminUser);
-      StorageService.setCurrentUser(adminUser);
-      onLoginSuccess(adminUser);
-      onNavigate('/admin');
-    } catch (err: unknown) {
-      console.warn('Quick login error:', err);
-      // Fallback
-      const adminUser: User = {
-        uid: 'user_admin',
-        fullName: 'Abdul Sattar Bhayo',
-        email: 'admin@mashallahBroker.com',
-        role: 'admin',
-        status: 'active',
-        createdAt: new Date().toISOString(),
-      };
-      StorageService.setCurrentUser(adminUser);
-      onLoginSuccess(adminUser);
-      onNavigate('/admin');
-    } finally {
-      setLoading(false);
-    }
-  };
-
   return (
     <div className="min-h-screen bg-[#fbfbfa] flex items-center justify-center p-4">
       <motion.div
@@ -410,20 +358,6 @@ export const AuthPage: React.FC<AuthPageProps> = ({
             className="text-primary font-bold hover:underline cursor-pointer"
           >
             {isLogin ? 'Sign Up' : 'Log In'}
-          </button>
-        </div>
-
-        {/* Quick Demo Admin Login */}
-        <div className="mt-8 pt-6 border-t border-gray-100 text-center">
-          <p className="text-xs text-gray-400 mb-2">Verified Admin Credentials</p>
-          <button
-            type="button"
-            onClick={handleQuickAdminLogin}
-            disabled={loading}
-            className="w-full flex items-center justify-center gap-2 border border-secondary text-gray-800 bg-amber-50/50 hover:bg-amber-100/60 py-2.5 rounded-xl text-xs font-semibold transition-colors cursor-pointer"
-          >
-            <KeyRound size={15} className="text-secondary" />
-            <span>Login as Admin (admin@mashallahBroker.com)</span>
           </button>
         </div>
       </motion.div>
