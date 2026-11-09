@@ -183,17 +183,6 @@ export const Hero: React.FC<HeroProps> = ({ settings }) => {
         Readable with drop shadows over clear video & poster imagery.
       */}
       <div className="relative z-20 text-center px-4 max-w-4xl mx-auto flex flex-col items-center">
-        {/* Modern Kicker Tag matching developer reference */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.1 }}
-          className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs sm:text-sm font-semibold tracking-wide bg-slate-900/60 backdrop-blur-md text-amber-300 border border-amber-400/30 mb-6 drop-shadow-md"
-        >
-          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-          <span>Pakistan's Premier Grain Broker · Est. 2005</span>
-        </motion.div>
-
         <motion.h1
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
