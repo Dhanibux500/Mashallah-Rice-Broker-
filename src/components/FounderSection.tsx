@@ -12,25 +12,21 @@ export const FounderSection: React.FC<FounderSectionProps> = ({ settings }) => {
     <section className="py-20 sm:py-24 bg-white border-b border-slate-100">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col md:flex-row items-center gap-12 lg:gap-16">
-          {/* Photo with 4 Rounded Corners ('4 Kono ma Gol') */}
+          {/* Circular Founder Photo */}
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5 }}
-            className="w-52 h-52 sm:w-60 sm:h-60 md:w-64 md:h-64 shrink-0 relative"
+            className="w-[180px] h-[180px] md:w-[220px] md:h-[220px] shrink-0 mx-auto md:mx-0 relative flex items-center justify-center bg-transparent"
           >
-            {/* Subtle soft backdrop glow */}
-            <div className="absolute -inset-1.5 rounded-[32px] bg-gradient-to-tr from-emerald-600/20 via-amber-400/25 to-emerald-500/10 blur-sm" />
-            <div className="relative w-full h-full rounded-[28px] overflow-hidden shadow-2xl ring-4 ring-amber-400/30 border-4 border-white bg-slate-100">
-              <img
-                src={settings.ownerPhotoUrl || '/abdul-sattar-bhayo-rice-broker.png'}
-                alt="Abdul Sattar Bhayo, founder of Mashallah Rice Broker"
-                className="w-full h-full object-cover object-top"
-                referrerPolicy="no-referrer"
-                loading="lazy"
-              />
-            </div>
+            <img
+              src={settings.ownerPhotoUrl || '/abdul-sattar-bhayo-rice-broker.png'}
+              alt="Abdul Sattar Bhayo, founder of Mashallah Rice Broker"
+              className="w-full h-full rounded-full aspect-square object-cover border-[2.5px] border-amber-400 shadow-[0_8px_25px_rgba(217,119,6,0.18)] bg-transparent"
+              referrerPolicy="no-referrer"
+              loading="lazy"
+            />
           </motion.div>
 
           {/* Founder Bio & Details */}
