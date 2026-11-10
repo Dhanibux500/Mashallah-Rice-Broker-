@@ -9,9 +9,10 @@ export default defineConfig(() => {
       react(),
       tailwindcss(),
       {
-        name: 'serve-google-verification',
+        name: 'seo-and-verification',
         configureServer(server) {
           server.middlewares.use((req, res, next) => {
+            res.setHeader('X-Robots-Tag', 'noindex, nofollow');
             if (req.url === '/google9a655d2e395f3abf.html' || req.url === '/google9a655d2e395f3abf.html/') {
               res.setHeader('Content-Type', 'text/html; charset=utf-8');
               res.end('google-site-verification: google9a655d2e395f3abf.html\n');

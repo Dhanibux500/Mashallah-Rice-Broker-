@@ -8,6 +8,8 @@ import { SiteSettings, Product, FAQ, Testimonial, Lead, User } from './types';
 import { StorageService } from './storage';
 import { auth } from './firebase';
 import { signOut, onAuthStateChanged } from 'firebase/auth';
+import { SITE_INDEXABLE } from './siteConfig';
+export { SITE_INDEXABLE };
 
 export default function App() {
   const [currentPath, setCurrentPath] = useState<string>(() => {
@@ -22,20 +24,19 @@ export default function App() {
   const [users, setUsers] = useState<User[]>(() => StorageService.getUsers());
   const [currentUser, setCurrentUser] = useState<User | null>(() => StorageService.getCurrentUser());
 
-  // Enforce noindex ONLY on /admin and /auth; all public pages remain indexable
+  // Control robots indexing via single toggle (SITE_INDEXABLE)
   useEffect(() => {
     let robotsMeta = document.querySelector('meta[name="robots"]');
-    if (currentPath === '/admin' || currentPath === '/auth') {
-      if (!robotsMeta) {
-        robotsMeta = document.createElement('meta');
-        robotsMeta.setAttribute('name', 'robots');
-        document.head.appendChild(robotsMeta);
-      }
+    if (!robotsMeta) {
+      robotsMeta = document.createElement('meta');
+      robotsMeta.setAttribute('name', 'robots');
+      document.head.appendChild(robotsMeta);
+    }
+
+    if (!SITE_INDEXABLE || currentPath === '/admin' || currentPath === '/auth') {
       robotsMeta.setAttribute('content', 'noindex, nofollow');
     } else {
-      if (robotsMeta) {
-        robotsMeta.remove();
-      }
+      robotsMeta.setAttribute('content', 'index, follow');
     }
   }, [currentPath]);
 

@@ -2,5 +2,3 @@ User-agent: *
 Allow: /
 Disallow: /admin
 Disallow: /auth
-
-Sitemap: https://mashallah-broker.vercel.app/sitemap.xml
